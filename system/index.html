@@ -41,7 +41,6 @@
       opacity: 1;
     }
 
-    /* แก้ไขดรอปดาวน์ให้ตัวหนังสือมองเห็นชัดเจน */
     .user-menu-container { position: relative; display: inline-block; }
     .user-dropdown-content {
       display: none;
@@ -122,6 +121,11 @@
     .stats-table, .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95rem; text-align: left; }
     .stats-table th, .stats-table td, .leaderboard-table th, .leaderboard-table td { padding: 10px; border-bottom: 1px solid #eee; }
     .stats-table th, .leaderboard-table th { background: #f8f9fa; color: var(--primary); }
+
+    .stat-box-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
+    .stat-box { background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #e9ecef; }
+    .stat-box span { display: block; font-size: 0.8rem; color: #666; margin-bottom: 4px; }
+    .stat-box strong { font-size: 1.2rem; color: var(--primary); }
     
     .hidden { display: none !important; }
   </style>
@@ -178,12 +182,21 @@
           </div>
         </div>
 
+        <!-- ลีดเดอร์บอร์ดและสถิติภาพรวมแยกตามหมวดหมู่ -->
         <div id="memberDashboard" class="hidden" style="margin-top: 35px; border-top: 2px dashed #eee; padding-top: 20px;">
-          <h3>🏆 ลีดเดอร์บอร์ดผู้ฝึกซ้อม (Leaderboard)</h3>
-          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-            <button class="btn" style="background:var(--primary); color:#fff; padding:6px 12px; font-size:0.85rem;" onclick="switchLeaderboard('opening')">Opening</button>
-            <button class="btn" style="background:#e9ecef; color:#333; padding:6px 12px; font-size:0.85rem;" onclick="switchLeaderboard('response_1c')">Response 1C</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+            <h3 style="margin: 0;">🏆 สถิติและลีดเดอร์บอร์ด</h3>
+            <div style="display: flex; gap: 6px;" id="modeButtonsGroup">
+              <button class="btn mode-tab-btn" id="btn_opening" style="background:var(--primary); color:#fff; padding:6px 14px; font-size:0.85rem;" onclick="switchDashboardMode('opening')">Opening</button>
+              <button class="btn mode-tab-btn" id="btn_response_1c" style="background:#e9ecef; color:#333; padding:6px 14px; font-size:0.85rem;" onclick="switchDashboardMode('response_1c')">Response 1C</button>
+            </div>
           </div>
+
+          <!-- สถิติส่วนตัวของผู้ใช้ในหมวดนั้นๆ -->
+          <div id="userPersonalSummary" style="margin-bottom: 20px;"></div>
+
+          <!-- ตาราง 5 อันดับแรก (Top 5 Leaderboard) -->
+          <h4 style="margin: 10px 0 5px 0; color: var(--primary);">🥇 5 อันดับแรก (Top Leaderboard)</h4>
           <div id="leaderboardContent">กำลังโหลดข้อมูล...</div>
         </div>
       </div>
@@ -245,7 +258,7 @@
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
           <button class="btn btn-primary" onclick="retryPractice()" type="button">🔄 ฝึกบทเดิมซ้ำ</button>
           <button class="btn" style="background:#52b788; color:#fff;" onclick="returnToMenu()" type="button">📂 เลือกฝึกบทอื่น</button>
-          <button class="btn member-only-btn hidden" style="background:#4361ee; color:#fff;" onclick="showMyStats()" type="button">📊 สถิติตัวเอง</button>
+          <button class="btn member-only-btn hidden" style="background:#4361ee; color:#fff;" onclick="showMyStatsModal()" type="button">📊 สถิติตัวเอง</button>
         </div>
 
         <div id="myStatsContainer" class="hidden" style="margin-top: 25px; text-align: left; border-top: 1px solid #eee; padding-top: 15px;"></div>
@@ -301,6 +314,7 @@
     let currentSelectedBid = { level: '', suit: '' };
     let isAnswerSubmitted = false;
     let countdownInterval = null;
+    let activeDashboardMode = 'opening';
 
     function playSound(type) {
       if (!soundEnabled) return;
@@ -595,7 +609,6 @@
       }
     }
 
-    // บันทึกสถิติลง Supabase (รองรับกรณีเช็ค Foreign Key พลาด ให้บันทึกแบบยืดหยุ่น)
     async function showSummary() {
       clearInterval(timerInterval);
       document.getElementById('quizView').classList.add('hidden');
@@ -625,25 +638,21 @@
             time_str: `${min}ม ${sec}ว`,
             avg_time: `${avgSec}s`
           }]);
-          if (error) {
-            console.error("Supabase insert error:", error);
-          }
+          if (error) console.error("Supabase insert error:", error);
         } catch (err) {
           console.error("Supabase exception:", err);
         }
-
-        document.querySelectorAll('.member-only-btn').forEach(b => b.classList.remove('hidden'));
       }
     }
 
-    // ดึงประวัติสถิติส่วนตัว (ค้นหาด้วย username ตรงๆ และเรียงลำดับปลอดภัย)
+    // ฟังก์ชันเปิดดูประวัติส่วนตัวในรูปแบบ Modal หรือ Pop-up / ตารางสรุป
     async function showMyStats() {
       let container = document.getElementById('myStatsContainer');
       container.classList.toggle('hidden');
       if (container.classList.contains('hidden')) return;
 
       const userName = localStorage.getItem('bridge_user_name');
-      container.innerHTML = `<p style="color:#666; font-size:0.9rem;">กำลังโหลดข้อมูล...</p>`;
+      container.innerHTML = `<p style="color:#666; font-size:0.9rem;">กำลังโหลดข้อมูลสถิติ...</p>`;
 
       if (!_supabase) {
         container.innerHTML = `<p style="color:red; font-size:0.9rem;">ไม่ได้เชื่อมต่อ Supabase</p>`;
@@ -655,31 +664,34 @@
           .from('practice_history')
           .select('*')
           .eq('username', userName)
-          .order('id', { ascending: false })
-          .limit(5);
+          .order('id', { ascending: false });
 
-        if (error) {
-          console.error("Fetch stats error:", error);
-          container.innerHTML = `<p style="color:red; font-size:0.9rem;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
-          return;
-        }
-
-        if (!data || data.length === 0) {
+        if (error || !data || data.length === 0) {
           container.innerHTML = `<p style="color:#666; font-size:0.9rem;">ยังไม่มีประวัติการฝึกซ้อม</p>`;
           return;
         }
 
-        let html = `<h4>📊 ประวัติการฝึกซ้อมส่วนตัว (ซิงค์จากเซิร์ฟเวอร์)</h4>
+        let totalGames = data.length;
+        let totalScoreSum = data.reduce((acc, curr) => acc + curr.score, 0);
+        let maxPossibleScore = totalGames * 20;
+        let avgAccuracy = ((totalScoreSum / maxPossibleScore) * 100).toFixed(1);
+
+        let html = `<h4>📊 สถิติภาพรวมของคุณ (${userName})</h4>
+                    <div class="stat-box-container">
+                      <div class="stat-box"><span>จำนวนครั้งที่ฝึก</span><strong>${totalGames} รอบ</strong></div>
+                      <div class="stat-box"><span>คะแนนเฉลี่ย</span><strong>${(totalScoreSum/totalGames).toFixed(1)} / 20</strong></div>
+                      <div class="stat-box"><span>อัตราตอบถูก</span><strong>${avgAccuracy}%</strong></div>
+                    </div>
+                    <h5 style="margin:15px 0 5px 0;">ประวัติย้อนหลัง:</h5>
                     <table class="stats-table">
-                      <tr><th>ลำดับ</th><th>หมวด</th><th>คะแนน</th><th>เวลา</th><th>เฉลี่ย/ข้อ</th></tr>`;
-        data.forEach((h, idx) => {
-          html += `<tr><td>รอบที่ ${data.length - idx}</td><td>${h.mode}</td><td><strong>${h.score}/20</strong></td><td>${h.time_str}</td><td>${h.avg_time}</td></tr>`;
+                      <tr><th>หมวด</th><th>คะแนน</th><th>เวลาใช้</th><th>เฉลี่ย/ข้อ</th></tr>`;
+        data.slice(0, 5).forEach(h => {
+          html += `<tr><td>${h.mode}</td><td><strong>${h.score}/20</strong></td><td>${h.time_str}</td><td>${h.avg_time}</td></tr>`;
         });
         html += `</table>`;
         container.innerHTML = html;
       } catch (err) {
-        console.error("Exception:", err);
-        container.innerHTML = `<p style="color:red; font-size:0.9rem;">เกิดข้อผิดพลาดในการเชื่อมต่อ</p>`;
+        container.innerHTML = `<p style="color:red; font-size:0.9rem;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
       }
     }
 
@@ -701,47 +713,89 @@
       document.getElementById('cheatSheetSide').classList.add('hidden');
       document.getElementById('myStatsContainer').classList.add('hidden');
       document.getElementById('menuView').classList.remove('hidden');
-      loadLeaderboard('opening');
+      loadDashboardData(activeDashboardMode);
     }
 
-    function switchLeaderboard(mode) {
-      loadLeaderboard(mode);
+    function switchDashboardMode(mode) {
+      activeDashboardMode = mode;
+      document.querySelectorAll('.mode-tab-btn').forEach(btn => {
+        btn.style.background = '#e9ecef';
+        btn.style.color = '#333';
+      });
+      let activeBtn = document.getElementById(`btn_${mode}`);
+      if (activeBtn) {
+        activeBtn.style.background = 'var(--primary)';
+        activeBtn.style.color = '#fff';
+      }
+      loadDashboardData(mode);
     }
 
-    async function loadLeaderboard(mode) {
-      let container = document.getElementById('leaderboardContent');
-      if (!container) return;
-      container.innerHTML = `<p style="font-size:0.9rem; color:#666;">กำลังโหลดลีดเดอร์บอร์ด...</p>`;
+    // โหลดข้อมูลทั้งสถิติส่วนตัวและลีดเดอร์บอร์ด Top 5 แยกตามหมวด
+    async function loadDashboardData(mode) {
+      let lbContainer = document.getElementById('leaderboardContent');
+      let statsContainer = document.getElementById('userPersonalSummary');
+      
+      if (!lbContainer || !statsContainer) return;
+      lbContainer.innerHTML = `<p style="font-size:0.9rem; color:#666;">กำลังโหลดข้อมูล...</p>`;
+      statsContainer.innerHTML = `<p style="font-size:0.9rem; color:#666;">กำลังโหลดสถิติส่วนตัว...</p>`;
 
       if (!_supabase) {
-        container.innerHTML = `<p style="font-size:0.9rem; color:red;">ไม่ได้เชื่อมต่อ Supabase</p>`;
+        lbContainer.innerHTML = `<p style="font-size:0.9rem; color:red;">ไม่ได้เชื่อมต่อ Supabase</p>`;
         return;
       }
 
+      const userName = localStorage.getItem('bridge_user_name');
+
       try {
-        let { data, error } = await _supabase
+        // 1. ดึงข้อมูลทั้งหมดของ User คนนี้ในหมวดนี้
+        let { data: myData } = await _supabase
           .from('practice_history')
-          .select('username, score, time_sec, time_str, id')
+          .select('*')
+          .eq('username', userName)
+          .eq('mode', mode);
+
+        if (myData && myData.length > 0) {
+          let myGames = myData.length;
+          let myTotalScore = myData.reduce((acc, curr) => acc + curr.score, 0);
+          let myAccuracy = ((myTotalScore / (myGames * 20)) * 100).toFixed(1);
+          let bestScore = Math.max(...myData.map(d => d.score));
+
+          statsContainer.innerHTML = `
+            <div class="stat-box-container">
+              <div class="stat-box"><span>ฝึกในหมวดนี้</span><strong>${myGames} รอบ</strong></div>
+              <div class="stat-box"><span>คะแนนสูงสุด</span><strong>${bestScore}/20</strong></div>
+              <div class="stat-box"><span>อัตราตอบถูก</span><strong>${myAccuracy}%</strong></div>
+            </div>`;
+        } else {
+          statsContainer.innerHTML = `<p style="font-size:0.9rem; color:#666; font-style:italic;">ยังไม่มีประวัติการฝึกในหมวด "${mode}" (เริ่มฝึกเพื่อเก็บสถิติกันเลย!)</p>`;
+        }
+
+        // 2. ดึง 5 อันดับแรก (Top Leaderboard) ของหมวดนี้
+        let { data: topData, error } = await _supabase
+          .from('practice_history')
+          .select('username, score, time_sec, time_str')
           .eq('mode', mode)
           .order('score', { ascending: false })
           .order('time_sec', { ascending: true })
           .limit(5);
 
-        if (error || !data || data.length === 0) {
-          container.innerHTML = `<p style="font-size:0.9rem; color:#666;">ยังไม่มีข้อมูลการฝึกในหมวดนี้</p>`;
+        if (error || !topData || topData.length === 0) {
+          lbContainer.innerHTML = `<p style="font-size:0.9rem; color:#666;">ยังไม่มีข้อมูลในลีดเดอร์บอร์ดหมวดนี้</p>`;
           return;
         }
 
         let html = `<table class="leaderboard-table">
                       <tr><th>อันดับ</th><th>ผู้ใช้</th><th>คะแนน</th><th>เวลา</th></tr>`;
-        data.forEach((item, index) => {
+        topData.forEach((item, index) => {
           let rankIcon = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `${index+1}`));
           html += `<tr><td>${rankIcon}</td><td>${item.username}</td><td><strong>${item.score}/20</strong></td><td>${item.time_str}</td></tr>`;
         });
         html += `</table>`;
-        container.innerHTML = html;
+        lbContainer.innerHTML = html;
+
       } catch (err) {
-        container.innerHTML = `<p style="font-size:0.9rem; color:red;">ไม่สามารถโหลดลีดเดอร์บอร์ดได้</p>`;
+        lbContainer.innerHTML = `<p style="font-size:0.9rem; color:red;">ไม่สามารถโหลดข้อมูลได้</p>`;
+        statsContainer.innerHTML = '';
       }
     }
 
@@ -769,7 +823,7 @@
 
         let dash = document.getElementById('memberDashboard');
         if (dash) dash.classList.remove('hidden');
-        loadLeaderboard('opening');
+        loadDashboardData('opening');
       } else {
         if (authBtn) {
           authBtn.textContent = 'เข้าสู่ระบบ';
