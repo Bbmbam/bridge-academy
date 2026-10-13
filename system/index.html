@@ -41,26 +41,32 @@
       opacity: 1;
     }
 
+    /* แก้ไขดรอปดาวน์ให้ตัวหนังสือมองเห็นชัดเจน */
     .user-menu-container { position: relative; display: inline-block; }
     .user-dropdown-content {
       display: none;
       position: absolute;
       right: 0;
-      background-color: #fff;
-      min-width: 160px;
+      background-color: #ffffff;
+      min-width: 170px;
       box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
       border-radius: 8px;
       z-index: 1000;
       overflow: hidden;
     }
     .user-dropdown-content a {
-      color: #333 !important;
-      padding: 10px 14px;
+      color: #333333 !important;
+      padding: 12px 16px;
       text-decoration: none;
       display: block;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      background-color: #ffffff !important;
+      opacity: 1 !important;
     }
-    .user-dropdown-content a:hover { background-color: #f1f1f1 !important; color: var(--primary) !important; }
+    .user-dropdown-content a:hover { 
+      background-color: #f1f1f1 !important; 
+      color: #1b4332 !important; 
+    }
     .user-menu-container.active .user-dropdown-content { display: block; }
 
     .practice-container { max-width: 1200px; margin: 30px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
@@ -345,7 +351,6 @@
     function generateQuestions(mode) {
       let list = [];
       for (let i = 1; i <= 20; i++) {
-        // เรียกใช้ฟังก์ชันสุ่มจาก 52 ใบจริงใน dss-engine.js
         let handData = DSSEngine.generateRandomHand();
         let engineRes = openingBid(handData.hcp, handData.shape);
         let correctBid = engineRes[0];
@@ -517,7 +522,6 @@
       document.getElementById('selectedAnswerDisplay').textContent = txt ? `คำตอบของคุณ: ${txt}` : 'ยังไม่ได้เลือกคำตอบ';
     }
 
-    // รองรับการแปลง 1NT เป็น 1N หรือ 2NT เป็น 2N อัตโนมัติทุกระดับ (1NT - 7NT)
     function normalizeAnswer(str) {
       return (str || "").toString().trim().toUpperCase()
         .replace(/♣/g, 'C')
@@ -591,6 +595,7 @@
       }
     }
 
+    // บันทึกสถิติลง Supabase (รองรับกรณีเช็ค Foreign Key พลาด ให้บันทึกแบบยืดหยุ่น)
     async function showSummary() {
       clearInterval(timerInterval);
       document.getElementById('quizView').classList.add('hidden');
@@ -620,15 +625,18 @@
             time_str: `${min}ม ${sec}ว`,
             avg_time: `${avgSec}s`
           }]);
-          if (error) console.error("Error saving stats:", error);
+          if (error) {
+            console.error("Supabase insert error:", error);
+          }
         } catch (err) {
-          console.error("Supabase error:", err);
+          console.error("Supabase exception:", err);
         }
 
         document.querySelectorAll('.member-only-btn').forEach(b => b.classList.remove('hidden'));
       }
     }
 
+    // ดึงประวัติสถิติส่วนตัว (ค้นหาด้วย username ตรงๆ และเรียงลำดับปลอดภัย)
     async function showMyStats() {
       let container = document.getElementById('myStatsContainer');
       container.classList.toggle('hidden');
@@ -647,25 +655,31 @@
           .from('practice_history')
           .select('*')
           .eq('username', userName)
-          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
           .limit(5);
 
-        if (error || !data || data.length === 0) {
+        if (error) {
+          console.error("Fetch stats error:", error);
+          container.innerHTML = `<p style="color:red; font-size:0.9rem;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+          return;
+        }
+
+        if (!data || data.length === 0) {
           container.innerHTML = `<p style="color:#666; font-size:0.9rem;">ยังไม่มีประวัติการฝึกซ้อม</p>`;
           return;
         }
 
         let html = `<h4>📊 ประวัติการฝึกซ้อมส่วนตัว (ซิงค์จากเซิร์ฟเวอร์)</h4>
                     <table class="stats-table">
-                      <tr><th>วันที่</th><th>หมวด</th><th>คะแนน</th><th>เวลา</th><th>เฉลี่ย/ข้อ</th></tr>`;
-        data.forEach(h => {
-          let dateStr = new Date(h.created_at).toLocaleDateString();
-          html += `<tr><td>${dateStr}</td><td>${h.mode}</td><td>${h.score}/20</td><td>${h.time_str}</td><td>${h.avg_time}</td></tr>`;
+                      <tr><th>ลำดับ</th><th>หมวด</th><th>คะแนน</th><th>เวลา</th><th>เฉลี่ย/ข้อ</th></tr>`;
+        data.forEach((h, idx) => {
+          html += `<tr><td>รอบที่ ${data.length - idx}</td><td>${h.mode}</td><td><strong>${h.score}/20</strong></td><td>${h.time_str}</td><td>${h.avg_time}</td></tr>`;
         });
         html += `</table>`;
         container.innerHTML = html;
       } catch (err) {
-        container.innerHTML = `<p style="color:red; font-size:0.9rem;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+        console.error("Exception:", err);
+        container.innerHTML = `<p style="color:red; font-size:0.9rem;">เกิดข้อผิดพลาดในการเชื่อมต่อ</p>`;
       }
     }
 
@@ -707,7 +721,7 @@
       try {
         let { data, error } = await _supabase
           .from('practice_history')
-          .select('username, score, time_sec, time_str, created_at')
+          .select('username, score, time_sec, time_str, id')
           .eq('mode', mode)
           .order('score', { ascending: false })
           .order('time_sec', { ascending: true })
@@ -719,11 +733,10 @@
         }
 
         let html = `<table class="leaderboard-table">
-                      <tr><th>อันดับ</th><th>ผู้ใช้</th><th>คะแนน</th><th>เวลา</th><th>วันที่</th></tr>`;
+                      <tr><th>อันดับ</th><th>ผู้ใช้</th><th>คะแนน</th><th>เวลา</th></tr>`;
         data.forEach((item, index) => {
           let rankIcon = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `${index+1}`));
-          let dateStr = new Date(item.created_at).toLocaleDateString();
-          html += `<tr><td>${rankIcon}</td><td>${item.username}</td><td><strong>${item.score}/20</strong></td><td>${item.time_str}</td><td>${dateStr}</td></tr>`;
+          html += `<tr><td>${rankIcon}</td><td>${item.username}</td><td><strong>${item.score}/20</strong></td><td>${item.time_str}</td></tr>`;
         });
         html += `</table>`;
         container.innerHTML = html;
