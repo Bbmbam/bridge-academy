@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/main.js" defer></script>
   <style>
-    /* เลย์เอาต์แบบ 2 คอลัมน์ (ซ้ายสารบัญ, ขวาเนื้อหา) */
     .learn-layout {
       display: grid;
       grid-template-columns: 1fr;
@@ -22,7 +21,7 @@
       }
     }
 
-    /* สไตล์กล่องสารบัญ */
+    /* แก้ไขให้สารบัญเกาะติดหน้าจอ (Sticky) ตลอดเวลา */
     .toc-card {
       background: #fff;
       border-radius: var(--radius);
@@ -30,7 +29,8 @@
       box-shadow: 0 6px 16px rgba(0,0,0,.05);
       border-top: 4px solid var(--primary);
       position: sticky;
-      top: calc(var(--nav-h) + 16px);
+      top: 80px;
+      z-index: 10;
     }
     .toc-card h3 {
       font-size: 1rem;
@@ -61,7 +61,6 @@
       color: var(--secondary);
     }
 
-    /* สไตล์มินิเกมและตัวช่วย */
     .game-box { background: #1b4332; border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid #2d6a4f; color: #fff; }
     .hcp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; text-align: center; }
     @media (min-width: 600px) { .hcp-grid { grid-template-columns: repeat(4, 1fr); } }
@@ -89,7 +88,6 @@
     .toggle-helper-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid #52b788; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 0.85rem; font-weight: bold; }
     .toggle-helper-btn:hover { background: rgba(255,255,255,0.25); }
 
-    /* ให้หน้าจอเลื่อนนุ่มนวลเวลาคลิกสารบัญ */
     html { scroll-behavior: smooth; }
   </style>
 </head>
@@ -112,7 +110,6 @@
 
     <div class="learn-layout">
       
-      <!-- ฝั่งซ้าย: สารบัญ -->
       <aside>
         <nav class="toc-card" aria-label="สารบัญบทเรียน">
           <h3>📑 สารบัญเนื้อหา</h3>
@@ -124,10 +121,8 @@
         </nav>
       </aside>
 
-      <!-- ฝั่งขวา: เนื้อหาบทเรียนทั้งหมด -->
       <div>
         
-        <!-- หัวข้อที่ 1: HCP + มินิเกม -->
         <section id="section-hcp" style="scroll-margin-top: 80px;">
           <div class="card" style="margin-bottom: 20px;">
             <h3>1. High Card Points (HCP) - แต้มไพ่สูง</h3>
@@ -144,7 +139,6 @@
             <p>รวมทั้งสำรับ (52 ใบ) จะมีแต้ม HCP ทั้งหมด <strong>40 แต้มพอดี</strong></p>
           </div>
 
-          <!-- มินิเกมฝึกนับแต้ม -->
           <div class="game-box">
             <div class="score-board">
               <span>🎮 แบบฝึกหัดนับแต้ม HCP</span>
@@ -166,7 +160,6 @@
               <div id="gameFeedback" style="margin-top: 8px; font-weight: bold; min-height: 22px; font-size: 0.95rem;"></div>
             </div>
 
-            <!-- ตัวช่วยนับแต้ม -->
             <div class="helper-box" id="helperBox" hidden>
               <h4 style="margin: 0 0 5px 0; color: var(--primary);">💡 ตัวช่วยนับแต้ม</h4>
               <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: var(--muted);">เลื่อนปรับจำนวนไพ่หน้าคนเพื่อช่วยทดลองคำนวณแต้ม:</p>
@@ -183,7 +176,6 @@
           </div>
         </section>
 
-        <!-- หัวข้อที่ 2: Distribution Points -->
         <section id="section-dist" style="scroll-margin-top: 80px;">
           <div class="card" style="margin-bottom: 20px;">
             <h3>2. Distribution Points (แต้มความยาวและความสั้นรูปมือ)</h3>
@@ -197,11 +189,10 @@
           </div>
         </section>
 
-        <!-- หัวข้อที่ 3: LTC -->
         <section id="section-ltc" style="scroll-margin-top: 80px;">
           <div class="card" style="margin-bottom: 20px;">
             <h3>3. Losing Trick Count (LTC - การนับแต้มเสีย)</h3>
-            <p>เป็นวิธีประเมินกำลังของมือไพ่ (นิยมใช้กับมือที่มียาว/unbalanced หรือประเมินความ Fit) โดยนับจำนวนตัวที่จะเสีย (Loser) ในแต่ละสี โดยดูจาก **ไพ่ 3 ตัวแรก (AKQ)** และ **จำนวนใบจริง** ที่ถืออยู่ในสีนั้น (สูงสุดไม่เกิน 3 Loser ต่อสี และไม่เกินจำนวนใบที่มี):</p>
+            <p>เป็นวิธีประเมินกำลังของมือไพ่ (นิยมใช้กับมือที่มียาว/unbalanced หรือประเมินความ Fit) โดยนับจำนวนตัวที่จะเสีย (Loser) ในแต่ละสี โดยดูจาก <strong>ไพ่ 3 ตัวแรก (AKQ)</strong> และ <strong>จำนวนใบจริง</strong> ที่ถืออยู่ในสีนั้น (สูงสุดไม่เกิน 3 Loser ต่อสี และไม่เกินจำนวนใบที่มี):</p>
             <ul>
               <li><strong>สีที่ไม่มีไพ่เลย (Void):</strong> นับ <strong>0 Loser</strong></li>
               <li><strong>มีไพ่ 1 ใบ:</strong> ถ้าเป็น A, K หรือ Q นับ <strong>1 Loser</strong> (ถ้าไม่มีตัวสูงนับ 1)</li>
