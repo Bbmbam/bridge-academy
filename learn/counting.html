@@ -15,10 +15,12 @@
       gap: 20px;
       align-items: start;
     }
+    
+    /* ควบคุมการแสดงผลสารบัญตามขนาดจอ */
+    .desktop-toc { display: none; }
     @media (min-width: 900px) {
-      .learn-layout {
-        grid-template-columns: 260px 1fr;
-      }
+      .learn-layout { grid-template-columns: 260px 1fr; }
+      .desktop-toc { display: block; position: sticky; top: 80px; align-self: start; }
     }
 
     .toc-card {
@@ -56,6 +58,63 @@
       background: var(--accent-light);
       color: var(--secondary);
     }
+
+    /* ปุ่มสารบัญลอยสำหรับมือถือ (Floating TOC Button) */
+    .mobile-toc-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 18px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 0.95rem;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      cursor: pointer;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    @media (min-width: 900px) { .mobile-toc-btn { display: none; } }
+
+    /* Modal / Popup สารบัญในมือถือ */
+    .toc-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .toc-modal.active { opacity: 1; visibility: visible; }
+    .toc-modal-content {
+      background: #fff;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 20px 20px 0 0;
+      padding: 20px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+      transform: translateY(100%);
+      transition: transform 0.3s ease-out;
+    }
+    .toc-modal.active .toc-modal-content { transform: translateY(0); }
+    .toc-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+    .toc-close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); }
 
     .game-box { background: #1b4332; border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid #2d6a4f; color: #fff; }
     .hcp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; text-align: center; }
@@ -106,8 +165,8 @@
 
     <div class="learn-layout">
       
-      <!-- บังคับเกาะติดด้วย inline style ตรงนี้ -->
-      <aside style="position: sticky; top: 80px; align-self: start;">
+      <!-- สารบัญสำหรับคอมพิวเตอร์ -->
+      <aside class="desktop-toc">
         <nav class="toc-card" aria-label="สารบัญบทเรียน">
           <h3>📑 สารบัญเนื้อหา</h3>
           <ul class="toc-list">
@@ -119,7 +178,6 @@
       </aside>
 
       <div>
-        
         <section id="section-hcp" style="scroll-margin-top: 80px;">
           <div class="card" style="margin-bottom: 20px;">
             <h3>1. High Card Points (HCP) - แต้มไพ่สูง</h3>
@@ -219,7 +277,33 @@
     </div>
   </main>
 
+  <!-- ปุ่มสารบัญลอยสำหรับมือถือ -->
+  <button class="mobile-toc-btn" onclick="toggleMobileToc()">
+    📑 สารบัญ
+  </button>
+
+  <!-- Popup สารบัญมือถือ -->
+  <div class="toc-modal" id="tocModal" onclick="if(event.target===this) toggleMobileToc()">
+    <div class="toc-modal-content">
+      <div class="toc-modal-header">
+        <h3 style="margin:0; color:var(--primary);">📑 สารบัญบทเรียน</h3>
+        <button class="toc-close-btn" onclick="toggleMobileToc()">&times;</button>
+      </div>
+      <ul class="toc-list" style="padding-bottom: 10px;">
+        <li><a href="#section-hcp" onclick="toggleMobileToc()">1. แต้ม HCP และมินิเกม</a></li>
+        <li><a href="#section-dist" onclick="toggleMobileToc()">2. แต้มรูปทรง (Distribution)</a></li>
+        <li><a href="#section-ltc" onclick="toggleMobileToc()">3. แต้มเสีย (LTC)</a></li>
+      </ul>
+    </div>
+  </div>
+
   <script>
+    // เปิด/ปิด Popup สารบัญมือถือ
+    function toggleMobileToc() {
+      let modal = document.getElementById('tocModal');
+      modal.classList.toggle('active');
+    }
+
     function toggleHelper() {
       let box = document.getElementById('helperBox');
       box.hidden = !box.hidden;
