@@ -1,3 +1,8 @@
+/* =========================================
+   Bridge Classroom - Mobile First Stylesheet
+   เขียนสำหรับมือถือก่อน แล้วขยายสำหรับจอใหญ่
+   ========================================= */
+
 :root {
   --primary: #1b4332;
   --secondary: #2d6a4f;
@@ -8,99 +13,139 @@
   --text: #212529;
   --muted: #6c757d;
   --radius: 12px;
+  --nav-h: 60px;
+  --tap: 44px;              /* ขนาดขั้นต่ำที่นิ้วกดได้สะดวก */
 }
 
-* { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: var(--nav-h);
+}
 
 body {
   font-family: 'Sarabun', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
   background: var(--bg);
   color: var(--text);
   margin: 0;
-  line-height: 1.7;
 }
 
-/* ---------- Navbar ---------- */
+img { max-width: 100%; height: auto; }
+
+/* ---------- Navbar (มือถือ) ---------- */
 .navbar {
-  position: sticky; top: 0; z-index: 10;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 24px;
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: var(--nav-h);
+  padding: 8px max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
   background: var(--primary); color: #fff;
 }
-.logo { font-weight: 700; font-size: 1.1rem; color: #fff; text-decoration: none; }
+.logo {
+  font-weight: 700; font-size: 1.05rem;
+  color: #fff; text-decoration: none; white-space: nowrap;
+}
 .logo .red { color: #ff8fa3; }
-.nav-links { display: flex; gap: 20px; align-items: center; }
-.nav-links a { color: #fff; text-decoration: none; opacity: .85; }
-.nav-links a:hover { opacity: 1; }
-.btn-login {
-  background: var(--accent); color: var(--primary) !important;
-  padding: 6px 16px; border-radius: 8px; font-weight: 700; opacity: 1 !important;
+
+.menu-toggle {
+  display: inline-grid; place-items: center;
+  width: var(--tap); height: var(--tap);
+  border: 0; border-radius: 8px;
+  background: transparent; color: #fff;
+  font-size: 1.5rem; cursor: pointer;
+}
+.menu-toggle:focus-visible { outline: 2px solid var(--accent); }
+
+.nav-links {
+  display: none;
+  position: absolute; top: 100%; left: 0; right: 0;
+  flex-direction: column; gap: 2px;
+  padding: 8px 16px 16px;
+  background: var(--primary);
+  box-shadow: 0 10px 20px rgba(0,0,0,.2);
+}
+.nav-links.open { display: flex; }
+.nav-links a {
+  display: flex; align-items: center;
+  min-height: var(--tap); padding: 10px 12px;
+  color: #fff; text-decoration: none; border-radius: 8px;
+}
+.nav-links a:hover,
+.nav-links a[aria-current="page"] { background: rgba(255,255,255,.12); }
+.nav-links .btn-login {
+  justify-content: center; margin-top: 8px;
+  background: var(--accent); color: var(--primary); font-weight: 700;
 }
 
 /* ---------- Hero ---------- */
 .hero {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: #fff; text-align: center;
-  padding: 56px 20px 64px;
+  padding: 36px 16px 40px;
 }
 .eyebrow {
-  margin: 0; font-size: .9rem; font-weight: 700;
+  margin: 0; font-size: .8rem; font-weight: 700;
   letter-spacing: 2px; text-transform: uppercase; color: var(--accent);
 }
-.hero h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); margin: 6px 0 10px; }
-.lead { max-width: 620px; margin: 0 auto 24px; opacity: .9; }
-.hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hero h1 { font-size: clamp(1.6rem, 6vw, 2.6rem); line-height: 1.3; margin: 6px 0 10px; }
+.lead { max-width: 620px; margin: 0 auto 24px; opacity: .9; font-size: 1rem; }
+.hero-actions { display: flex; flex-direction: column; gap: 10px; max-width: 360px; margin: 0 auto; }
 
 /* ---------- Buttons ---------- */
 .btn {
-  display: inline-block; padding: 10px 22px; border-radius: 8px;
-  font-weight: 700; text-decoration: none; transition: .2s;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--tap); padding: 10px 22px;
+  border-radius: 8px; border: 2px solid transparent;
+  font-weight: 700; font-size: 1rem; text-decoration: none;
+  transition: background .2s, transform .1s;
 }
+.btn:active { transform: scale(.97); }
 .btn-primary { background: var(--accent); color: var(--primary); }
-.btn-primary:hover { background: #74c69d; }
-.btn-ghost { border: 2px solid rgba(255,255,255,.6); color: #fff; }
-.btn-ghost:hover { background: rgba(255,255,255,.12); }
+.btn-ghost { border-color: rgba(255,255,255,.6); color: #fff; }
 
 /* ---------- Layout ---------- */
-.container { max-width: 1100px; margin: 0 auto; padding: 24px 20px 48px; }
+.container {
+  max-width: 1100px; margin: 0 auto;
+  padding: 16px max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left));
+}
 .section-title {
-  font-size: 1.2rem; color: var(--primary);
-  margin: 32px 0 14px; padding-left: 10px;
+  font-size: 1.1rem; color: var(--primary);
+  margin: 28px 0 12px; padding-left: 10px;
   border-left: 4px solid var(--accent);
 }
 .grid {
-  display: grid; gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
 }
 
 /* ---------- Cards ---------- */
 .card {
   display: flex; flex-direction: column;
   background: var(--card); color: var(--text);
-  border-radius: var(--radius); padding: 24px;
+  border-radius: var(--radius); padding: 18px;
   border-top: 4px solid var(--accent);
-  box-shadow: 0 8px 20px rgba(0,0,0,.05);
+  box-shadow: 0 6px 16px rgba(0,0,0,.05);
   text-decoration: none;
-  transition: transform .25s, box-shadow .25s;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .2s, box-shadow .2s;
 }
-a.card:hover, a.card:focus-visible {
-  transform: translateY(-4px);
-  box-shadow: 0 14px 28px rgba(0,0,0,.1);
-}
+a.card:active { transform: scale(.98); }             /* แตะบนมือถือ */
 a.card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .card.disabled { opacity: .6; border-top-color: #ced4da; cursor: not-allowed; }
 
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; }
 .card-icon {
-  width: 44px; height: 44px; border-radius: 10px;
+  flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px;
   background: var(--accent-light);
   display: grid; place-items: center; font-size: 1.3rem;
 }
-.card h3 { margin: 0 0 8px; color: var(--primary); font-size: 1.2rem; }
-.card p { margin: 0 0 16px; color: var(--muted); font-size: .95rem; flex-grow: 1; }
+.card h3 { margin: 0 0 6px; color: var(--primary); font-size: 1.15rem; line-height: 1.4; }
+.card p { margin: 0 0 14px; color: var(--muted); font-size: .95rem; flex-grow: 1; }
 .card .more { font-weight: 700; color: var(--secondary); }
 
-.badge { padding: 3px 10px; border-radius: 20px; font-size: .78rem; font-weight: 700; }
+.badge { padding: 3px 10px; border-radius: 20px; font-size: .75rem; font-weight: 700; white-space: nowrap; }
 .badge.ready { background: var(--accent-light); color: var(--secondary); }
 .badge.draft { background: #fff3cd; color: #8a6d00; }
 .badge.soon  { background: #e9ecef; color: var(--muted); }
@@ -110,20 +155,58 @@ a.card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
 /* ---------- Continue banner ---------- */
 .continue {
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 12px;
+  display: flex; flex-direction: column; gap: 10px;
   background: var(--accent-light); border-radius: var(--radius);
-  padding: 16px 20px; margin-top: 8px;
+  padding: 16px; margin-top: 8px;
 }
+
+/* ---------- สีดอกไพ่ (ไว้ใช้ในบทถัดไป) ---------- */
+.suit-s, .suit-c { color: #212529; }
+.suit-h, .suit-d { color: #d00000; }
 
 /* ---------- Footer ---------- */
-footer { text-align: center; padding: 24px; color: var(--muted); font-size: .9rem; }
+footer {
+  text-align: center; color: var(--muted); font-size: .85rem;
+  padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+}
 footer a { color: var(--secondary); }
 
-/* ---------- Responsive & Accessibility ---------- */
-@media (max-width: 640px) {
-  .nav-links a:not(.btn-login) { display: none; }
+/* =========================================
+   แท็บเล็ตขึ้นไป (≥ 600px)
+   ========================================= */
+@media (min-width: 600px) {
+  .hero { padding: 56px 24px 64px; }
+  .hero-actions { flex-direction: row; justify-content: center; max-width: none; }
+  .continue { flex-direction: row; justify-content: space-between; align-items: center; }
+  .grid { gap: 20px; }
+  .card { padding: 24px; }
 }
+
+/* =========================================
+   คอมพิวเตอร์ (≥ 900px) - เมนูเต็มแถว
+   ========================================= */
+@media (min-width: 900px) {
+  body { font-size: 17px; }
+  .navbar { padding-left: 32px; padding-right: 32px; }
+  .menu-toggle { display: none; }
+  .nav-links {
+    display: flex; position: static;
+    flex-direction: row; align-items: center; gap: 4px;
+    padding: 0; background: none; box-shadow: none;
+  }
+  .nav-links a { min-height: auto; padding: 6px 14px; }
+  .nav-links .btn-login { margin: 0 0 0 10px; }
+  .container { padding: 24px 32px 56px; }
+  .section-title { font-size: 1.25rem; margin-top: 36px; }
+}
+
+/* เอฟเฟกต์ลอยเฉพาะอุปกรณ์ที่มีเมาส์ (มือถือจะไม่ค้างสถานะ hover) */
+@media (hover: hover) {
+  a.card:hover { transform: translateY(-4px); box-shadow: 0 14px 28px rgba(0,0,0,.1); }
+  .btn-primary:hover { background: #74c69d; }
+  .btn-ghost:hover { background: rgba(255,255,255,.12); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
