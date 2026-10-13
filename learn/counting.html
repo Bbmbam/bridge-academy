@@ -9,28 +9,33 @@
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/main.js" defer></script>
   <style>
-    .calc-box, .game-box { background: #e8f5e9; border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid #c8e6c9; }
-    .game-box { background: #1b4332; color: #fff; }
-    .hcp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; text-align: center; }
-    .hcp-item { background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #212529; }
-    .hcp-item span { display: block; color: var(--muted); font-size: 0.85rem; }
-    .hcp-item strong { display: block; color: var(--primary); font-size: 1.3rem; margin-top: 4px; }
-    .result-bar { font-size: 1.2rem; font-weight: bold; color: var(--secondary); text-align: center; margin-top: 15px; }
+    .game-box { background: #1b4332; border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid #2d6a4f; color: #fff; }
+    .hcp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; text-align: center; }
+    @media (min-width: 600px) { .hcp-grid { grid-template-columns: repeat(4, 1fr); } }
+    .hcp-item { background: #fff; padding: 8px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #212529; }
+    .hcp-item span { display: block; color: var(--muted); font-size: 0.8rem; }
+    .hcp-item strong { display: block; color: var(--primary); font-size: 1.2rem; margin-top: 2px; }
+    .result-bar { font-size: 1.1rem; font-weight: bold; color: var(--accent); text-align: center; margin-top: 10px; }
+    
     table.guide-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #212529; }
     table.guide-table th, table.guide-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
     table.guide-table th { background: var(--primary); color: #fff; }
     
-    /* สไตล์สำหรับมินิเกมแสดงมือไพ่แบบ BBO */
-    .bridge-table { background: #0f2a1d; border-radius: 10px; padding: 15px; margin: 15px 0; border: 2px solid #52b788; }
-    .suit-row { display: flex; align-items: center; margin: 8px 0; font-size: 1.1rem; }
-    .suit-icon { width: 30px; font-size: 1.3rem; text-align: center; }
+    .bridge-table { background: #0f2a1d; border-radius: 10px; padding: 12px; margin: 12px 0; border: 2px solid #52b788; }
+    .suit-row { display: flex; align-items: center; margin: 6px 0; font-size: 1.05rem; }
+    .suit-icon { width: 30px; font-size: 1.2rem; text-align: center; }
     .suit-s, .suit-c { color: #adb5bd; }
     .suit-h, .suit-d { color: #ff6b6b; }
-    .card-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-left: 10px; }
-    .c-badge { background: #fff; color: #212529; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    .game-controls { display: flex; gap: 10px; margin-top: 15px; }
-    .game-controls input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; font-family: 'Sarabun', sans-serif; }
-    .score-board { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 10px; color: #d8f3dc; }
+    .card-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-left: 8px; }
+    .c-badge { background: #fff; color: #212529; padding: 3px 8px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .game-controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .game-controls input { flex: 1; min-width: 120px; padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; font-family: 'Sarabun', sans-serif; }
+    .score-board { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 8px; color: #d8f3dc; font-size: 0.95rem; }
+    
+    /* กล่องพับได้สำหรับตัวช่วยนับแต้ม */
+    .helper-box { background: #e8f5e9; border-radius: 10px; padding: 15px; margin-top: 15px; border: 1px solid #c8e6c9; color: #212529; }
+    .toggle-helper-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid #52b788; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 0.85rem; font-weight: bold; }
+    .toggle-helper-btn:hover { background: rgba(255,255,255,0.25); }
   </style>
 </head>
 <body>
@@ -62,53 +67,52 @@
         <tr><td><strong>Jack (J)</strong></td><td>1 แต้ม</td></tr>
         <tr><td>10 ลงมา</td><td>0 แต้ม</td></tr>
       </table>
-      <p>รวมทั้งสำรับ (52 ใบ) จะมีแต้ม HCP ทั้งหมด <strong>40 แต้มพอดี</strong> (เฉลี่ยผู้เล่น 1 คนจะมี 10 แต้ม)</p>
+      <p>รวมทั้งสำรับ (52 ใบ) จะมีแต้ม HCP ทั้งหมด <strong>40 แต้มพอดี</strong></p>
     </div>
 
     <!-- มินิเกมฝึกนับแต้ม -->
     <div class="game-box">
       <div class="score-board">
-        <span>🎮 แบบฝึกหัด: นับแต้ม HCP จากมือไพ่</span>
-        <span id="scoreText">ถูก 0/0</span>
-      </div>
-      <p style="margin: 0 0 10px 0; color: #d8f3dc; font-size: 0.95rem;">ดูไพ่ 13 ใบในมือด้านล่างนี้ แล้วคำนวณว่ามีแต้ม HCP รวมเท่าไหร่?</p>
-      
-      <div class="bridge-table" id="bridgeTable">
-        <!-- สร้างโดย JavaScript -->
-      </div>
-
-      <div style="margin-top: 10px;">
-        <label for="userAns" style="display: block; margin-bottom: 5px; font-weight: bold;">มือนี้มีกี่ HCP?</label>
-        <div class="game-controls">
-          <input type="number" id="userAns" placeholder="ใส่ตัวเลขแต้ม HCP เช่น 12" onkeydown="if(event.key==='Enter') checkAnswer()">
-          <button class="btn btn-primary" onclick="checkAnswer()" id="btnCheck">ตรวจคำตอบ</button>
+        <span>🎮 แบบฝึกหัดนับแต้ม HCP</span>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="toggle-helper-btn" onclick="toggleHelper()">🧮 เปิด/ปิด ตัวช่วยนับแต้ม</button>
+          <span id="scoreText">ถูก 0/0</span>
         </div>
-        <div id="gameFeedback" style="margin-top: 10px; font-weight: bold; min-height: 24px;"></div>
       </div>
-    </div>
+      <p style="margin: 0 0 8px 0; color: #d8f3dc; font-size: 0.9rem;">ดูไพ่ 13 ใบในมือ แล้วคำนวณว่ามีแต้ม HCP รวมเท่าไหร่?</p>
+      
+      <div class="bridge-table" id="bridgeTable"></div>
 
-    <!-- เครื่องมือลองคำนวณ HCP -->
-    <div class="calc-box">
-      <h3 style="color: var(--primary);">🧮 เครื่องมือลองจัดไพ่และนับแต้มเอง</h3>
-      <p style="color: var(--text);">ลองติ๊กเลือกจำนวนไพ่หน้าคนที่คุณถืออยู่ แล้วระบบจะรวมแต้มให้ดูทันที:</p>
-      
-      <div class="hcp-grid">
-        <div class="hcp-item"><span>A (4 แต้ม)</span><strong id="cntA">0</strong>ใบ <br><input type="range" id="rangeA" min="0" max="4" value="0" style="width:100%; margin-top:8px;" oninput="calcHCP()"></div>
-        <div class="hcp-item"><span>K (3 แต้ม)</span><strong id="cntK">0</strong>ใบ <br><input type="range" id="rangeK" min="0" max="4" value="0" style="width:100%; margin-top:8px;" oninput="calcHCP()"></div>
-        <div class="hcp-item"><span>Q (2 แต้ม)</span><strong id="cntQ">0</strong>ใบ <br><input type="range" id="rangeQ" min="0" max="4" value="0" style="width:100%; margin-top:8px;" oninput="calcHCP()"></div>
-        <div class="hcp-item"><span>J (1 แต้ม)</span><strong id="cntJ">0</strong>ใบ <br><input type="range" id="rangeJ" min="0" max="4" value="0" style="width:100%; margin-top:8px;" oninput="calcHCP()"></div>
+      <div style="margin-top: 8px;">
+        <div class="game-controls">
+          <input type="number" id="userAns" placeholder="ใส่ตัวเลข HCP เช่น 12" onkeydown="if(event.key==='Enter') checkAnswer()">
+          <button class="btn btn-primary" onclick="checkAnswer()" id="btnCheck" style="padding: 8px 16px;">ตรวจคำตอบ</button>
+          <button class="btn" onclick="generateRandomHand()" style="background: #38b000; color: #fff; border: none; padding: 8px 14px;">เปลี่ยนมือ</button>
+        </div>
+        <div id="gameFeedback" style="margin-top: 8px; font-weight: bold; min-height: 22px; font-size: 0.95rem;"></div>
       </div>
-      
-      <div class="result-bar" id="resultHCP">รวมแต้ม HCP ในมือ: 0 แต้ม</div>
+
+      <!-- ตัวช่วยนับแต้ม (ซ่อนไว้ เปิดปิดได้) -->
+      <div class="helper-box" id="helperBox" hidden>
+        <h4 style="margin: 0 0 5px 0; color: var(--primary);">💡 ตัวช่วยนับแต้ม</h4>
+        <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: var(--muted);">เลื่อนปรับจำนวนไพ่หน้าคนเพื่อช่วยทดลองคำนวณแต้ม:</p>
+        
+        <div class="hcp-grid">
+          <div class="hcp-item"><span>A (4แต้ม)</span><strong id="cntA">0</strong>ใบ <br><input type="range" id="rangeA" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
+          <div class="hcp-item"><span>K (3แต้ม)</span><strong id="cntK">0</strong>ใบ <br><input type="range" id="rangeK" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
+          <div class="hcp-item"><span>Q (2แต้ม)</span><strong id="cntQ">0</strong>ใบ <br><input type="range" id="rangeQ" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
+          <div class="hcp-item"><span>J (1แต้ม)</span><strong id="cntJ">0</strong>ใบ <br><input type="range" id="rangeJ" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
+        </div>
+        
+        <div class="result-bar" id="resultHCP">รวมแต้มจากตัวช่วย: 0 แต้ม</div>
+      </div>
     </div>
 
     <div class="card" style="margin-bottom: 20px;">
       <h3>2. Distribution Points (แต้มความยาวรูปมือ)</h3>
-      <p>นอกจากแต้มหน้าไพ่แล้ว เมื่อเราเจอ "Fit" (มีไพ่สีเดียวกันรวมกัน 8 ใบขึ้นไปกับคู่ขา) เราจะนับแต้มความสั้นยาวเพิ่มเพื่อประเมินสัญญาเกม (Game Contract):</p>
+      <p>เมื่อเจอ Fit กับคู่ขา นับแต้มเพิ่มสำหรับความสั้นยาว:</p>
       <ul>
-        <li><strong>Void (ไม่มีเลยในสีนั้น):</strong> 3 แต้ม</li>
-        <li><strong>Singleton (มีใบเดียว):</strong> 2 แต้ม</li>
-        <li><strong>Doubleton (มี 2 ใบ):</strong> 1 แต้ม</li>
+        <li><strong>Void (ไม่มีเลย):</strong> 3 แต้ม | <strong>Singleton (ใบเดียว):</strong> 2 แต้ม | <strong>Doubleton (2 ใบ):</strong> 1 แต้ม</li>
       </ul>
     </div>
 
@@ -118,7 +122,13 @@
   </main>
 
   <script>
-    // เครื่องมือคำนวณ HCP
+    // เปิด/ปิด ตัวช่วยนับแต้ม
+    function toggleHelper() {
+      let box = document.getElementById('helperBox');
+      box.hidden = !box.hidden;
+    }
+
+    // เครื่องมือคำนวณในตัวช่วย
     function calcHCP() {
       let a = parseInt(document.getElementById('rangeA').value);
       let k = parseInt(document.getElementById('rangeK').value);
@@ -131,7 +141,7 @@
       document.getElementById('cntJ').textContent = j;
 
       let total = (a * 4) + (k * 3) + (q * 2) + (j * 1);
-      document.getElementById('resultHCP').textContent = `รวมแต้ม HCP ในมือ: ${total} แต้ม`;
+      document.getElementById('resultHCP').textContent = `รวมแต้มจากตัวช่วย: ${total} แต้ม`;
     }
 
     // มินิเกมสุ่มมือไพ่
@@ -145,15 +155,7 @@
       document.getElementById('userAns').value = '';
       document.getElementById('gameFeedback').textContent = '';
       
-      // สุ่มแจกไพ่ 13 ใบแบบคร่าวๆ แยกตาม 4 สี (♠, ♥, ♦, ♣)
-      let suits = [[], [], [], []];
-      let cardValues = {'A': 4, 'K': 3, 'Q': 2, 'J': 1};
-      let hcpSum = 0;
-
-      // สุ่มจำนวนใบแต่ละสีให้รวมได้ 13 ใบ
-      let counts = [3, 3, 3, 4]; // เริ่มจากใกล้เคียง
-      // สลับความยาวหน่อย
-      counts = [
+      let counts = [
         Math.floor(Math.random() * 5) + 1,
         Math.floor(Math.random() * 5) + 1,
         Math.floor(Math.random() * 5) + 1,
@@ -164,16 +166,16 @@
 
       const suitSymbols = ['♠', '♥', '♦', '♣'];
       let html = '';
+      let hcpSum = 0;
+      let cardValues = {'A': 4, 'K': 3, 'Q': 2, 'J': 1};
 
       for(let s=0; s<4; s++) {
-        // สุ่มเลือกไพ่ในสีนี้จำนวน counts[s] ใบ
         let available = [...ranksLib];
         let chosen = [];
         for(let i=0; i<counts[s]; i++) {
           let idx = Math.floor(Math.random() * available.length);
           chosen.push(available.splice(idx, 1)[0]);
         }
-        // เรียงลำดับความใหญ่ของไพ่คร่าวๆ (A K Q J 10 9 ...)
         chosen.sort((x, y) => ranksLib.indexOf(x) - ranksLib.indexOf(y));
 
         html += `<div class="suit-row">
@@ -195,7 +197,7 @@
       document.getElementById('bridgeTable').innerHTML = html;
     }
 
-        function checkAnswer() {
+    function checkAnswer() {
       let val = parseInt(document.getElementById('userAns').value);
       let fb = document.getElementById('gameFeedback');
       if(isNaN(val)) {
@@ -207,20 +209,18 @@
       totalPlayed++;
       if(val === currentCorrectHCP) {
         totalCorrect++;
-        fb.textContent = `🎉 ถูกต้อง! มือนี้มี HCP รวม ${currentCorrectHCP} แต้ม เก่งมากครับ! กำลังไปข้อถัดไป...`;
+        fb.textContent = `🎉 ถูกต้อง! มือนี้มี HCP รวม ${currentCorrectHCP} แต้ม กำลังไปข้อถัดไป...`;
         fb.style.color = '#74c69d';
         document.getElementById('scoreText').textContent = `ถูก ${totalCorrect}/${totalPlayed}`;
-        setTimeout(generateRandomHand, 1500); // ถูกต้องรอ 1.5 วิแล้วเปลี่ยนข้อ
+        setTimeout(generateRandomHand, 1500);
       } else {
-        // ตอบผิด: แจ้งเตือนแล้วสุ่มข้อใหม่ทันทีโดยไม่ให้ค้างคา
-        fb.textContent = `❌ ผิดครับ! คำตอบที่ถูกคือ ${currentCorrectHCP} แต้ม (กำลังเปลี่ยนเป็นข้อใหม่...)`;
+        fb.textContent = `❌ ผิดครับ! คำตอบที่ถูกคือ ${currentCorrectHCP} แต้ม (กำลังเปลี่ยนข้อ...)`;
         fb.style.color = '#ff6b6b';
-        document.getElementById('scoreText').textContent = `ถูก ${totalCorrect}/${totalPlayed}`;
-        setTimeout(generateRandomHand, 2000); // ตอบผิดรอ 2 วิให้เห็นข้อความ แล้วเปลี่ยนข้อใหม่ทันที
+        document.getElementById('scoreText'].textContent = `ถูก ${totalCorrect}/${totalPlayed}`;
+        setTimeout(generateRandomHand, 2000);
       }
     }
 
-    // เริ่มเกมครั้งแรกตอนเปิดหน้าเว็บ
     generateRandomHand();
   </script>
 </body>
