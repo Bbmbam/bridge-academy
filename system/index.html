@@ -41,20 +41,23 @@
       opacity: 1;
     }
 
+    /* แก้ไขดรอปดาวน์ให้ตัวหนังสือมองเห็นชัดเจน (บังคับสีดำ) */
     .user-menu-container { position: relative; display: inline-block; }
     .user-dropdown-content {
       display: none;
       position: absolute;
       right: 0;
-      background-color: #ffffff;
+      background-color: #ffffff !important;
       min-width: 170px;
       box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
       border-radius: 8px;
       z-index: 1000;
       overflow: hidden;
     }
-    .user-dropdown-content a {
-      color: #333333 !important;
+    .user-dropdown-content a, 
+    .user-dropdown-content a:link, 
+    .user-dropdown-content a:visited {
+      color: #111111 !important;
       padding: 12px 16px;
       text-decoration: none;
       display: block;
@@ -64,7 +67,7 @@
     }
     .user-dropdown-content a:hover { 
       background-color: #f1f1f1 !important; 
-      color: #1b4332 !important; 
+      color: var(--primary) !important; 
     }
     .user-menu-container.active .user-dropdown-content { display: block; }
 
@@ -645,7 +648,6 @@
       }
     }
 
-    // ฟังก์ชันเปิดดูประวัติส่วนตัวในรูปแบบ Modal หรือ Pop-up / ตารางสรุป
     async function showMyStats() {
       let container = document.getElementById('myStatsContainer');
       container.classList.toggle('hidden');
@@ -730,7 +732,6 @@
       loadDashboardData(mode);
     }
 
-    // โหลดข้อมูลทั้งสถิติส่วนตัวและลีดเดอร์บอร์ด Top 5 แยกตามหมวด
     async function loadDashboardData(mode) {
       let lbContainer = document.getElementById('leaderboardContent');
       let statsContainer = document.getElementById('userPersonalSummary');
@@ -740,14 +741,13 @@
       statsContainer.innerHTML = `<p style="font-size:0.9rem; color:#666;">กำลังโหลดสถิติส่วนตัว...</p>`;
 
       if (!_supabase) {
-        lbContainer.innerHTML = `<p style="font-size:0.9rem; color:red;">ไม่ได้เชื่อมต่อ Supabase</p>`;
+        lbContainer.innerHTML = `<p style="font-size:0.9rem; color:red;">ไม่ได้เชื่อมต่อ Supabase</p>';
         return;
       }
 
       const userName = localStorage.getItem('bridge_user_name');
 
       try {
-        // 1. ดึงข้อมูลทั้งหมดของ User คนนี้ในหมวดนี้
         let { data: myData } = await _supabase
           .from('practice_history')
           .select('*')
@@ -770,7 +770,6 @@
           statsContainer.innerHTML = `<p style="font-size:0.9rem; color:#666; font-style:italic;">ยังไม่มีประวัติการฝึกในหมวด "${mode}" (เริ่มฝึกเพื่อเก็บสถิติกันเลย!)</p>`;
         }
 
-        // 2. ดึง 5 อันดับแรก (Top Leaderboard) ของหมวดนี้
         let { data: topData, error } = await _supabase
           .from('practice_history')
           .select('username, score, time_sec, time_str')
