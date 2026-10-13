@@ -156,7 +156,7 @@
       <a href="../learn/counting.html" aria-current="page">นับไพ่</a>
       <a href="../practice/index.html">ฝึกประมูล</a>
       <a href="../analyzer/hand.html">วิเคราะห์</a>
-      <a href="../login.html" class="btn-login">เข้าสู่ระบบ</a>
+      <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
     </div>
   </nav>
 
@@ -298,6 +298,26 @@
   </div>
 
   <script>
+    // ตรวจสอบสถานะการล็อกอินตอนโหลดหน้าเว็บ เพื่ออัปเดตปุ่มขวาบน
+    window.addEventListener('DOMContentLoaded', () => {
+      const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
+      const userName = localStorage.getItem('bridge_user_name');
+      const authNavBtn = document.getElementById('authNavBtn');
+
+      if (isLogged && authNavBtn) {
+        authNavBtn.textContent = `👤 ${userName || 'สมาชิก'}`;
+        authNavBtn.href = '#';
+        authNavBtn.onclick = (e) => {
+          e.preventDefault();
+          if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+            localStorage.removeItem('bridge_user_logged');
+            localStorage.removeItem('bridge_user_name');
+            window.location.href = '../index.html';
+          }
+        };
+      }
+    });
+
     // เปิด/ปิด Popup สารบัญมือถือ
     function toggleMobileToc() {
       let modal = document.getElementById('tocModal');
