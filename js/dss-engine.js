@@ -36,11 +36,6 @@ function hasShort(shape) {
     return s <= 1 || h <= 1 || d <= 1 || c <= 1;
 }
 
-function suitRank(suitChar) {
-    const ranks = { "C": 1, "D": 2, "H": 3, "S": 4, "N": 5 };
-    return ranks[suitChar.toUpperCase()] || 0;
-}
-
 // ==========================================
 // CENTRALIZED DECISION ENGINE
 // ==========================================
@@ -50,8 +45,8 @@ function evaluateCentralDecision(openerHcp, openerShape, responseRangeDict, curr
     let balanced = isBalanced(openerShape);
     let responseStr = (currentBidStr || "").toUpperCase().trim();
 
-    let minResp = responseRangeDict.p_min !== undefined ? responseRangeDict.p_min : (responseRangeDict.p_min || 6);
-    let maxResp = responseRangeDict.p_max !== undefined ? responseRangeDict.p_max : 10;
+    let minResp = responseRangeDict.min !== undefined ? responseRangeDict.min : (responseRangeDict.p_min !== undefined ? responseRangeDict.p_min : 6);
+    let maxResp = responseRangeDict.max !== undefined ? responseRangeDict.max : (responseRangeDict.p_max !== undefined ? responseRangeDict.p_max : 10);
     
     let respS = responseRangeDict.s_min || 0;
     let respH = responseRangeDict.h_min || 0;
@@ -80,6 +75,10 @@ function evaluateCentralDecision(openerHcp, openerShape, responseRangeDict, curr
     const SLAM_ZONE = 32;
     const GAME_ZONE_MIN = 25;
     const GAME_ZONE_MAX = 31;
+
+    function suitRank(suitChar) {
+        return { "C": 1, "D": 2, "H": 3, "S": 4, "N": 5 }[suitChar.toUpperCase()] || 0;
+    }
 
     let currentLevel = responseStr && !isNaN(responseStr[0]) ? parseInt(responseStr[0]) : 1;
     let currentSuit = responseStr.length > 1 ? responseStr.substring(1) : "C";
@@ -131,11 +130,12 @@ function evaluateCentralDecision(openerHcp, openerShape, responseRangeDict, curr
         if (minTotal >= 29 && distPoints > 12) return [`5${fitSuit}`, `Decision: Strong Minor Game 5${fitSuit}`];
         
         if (minTotal >= GAME_ZONE_MIN && minTotal <= GAME_ZONE_MAX) {
-            if (ntMin >= GAME_ZONE_MIN) return ["3N", "Decision: NT Game preferred over Minor (Safer)"];
+            if (ntMin >= GAME_ZONE_MIN) return ["3N", `Decision: NT Game preferred over 5${fitSuit} (Safer)`];
             return [`4${fitSuit}`, "Decision: Minor Game Invite / Safe Stop at 4"];
         }
         if (minTotal < GAME_ZONE_MIN && maxTotal >= GAME_ZONE_MIN) {
-            return [getCheapestBid(fitSuit), "Decision: Minor Game Try / Invitational"];
+            let cheapest = getCheapestBid(fitSuit);
+            return [cheapest, "Decision: Minor Game Try / Invitational"];
         }
     }
 
@@ -143,9 +143,9 @@ function evaluateCentralDecision(openerHcp, openerShape, responseRangeDict, curr
     if (ntMin >= GAME_ZONE_MIN && ntMin <= GAME_ZONE_MAX) return ["3N", "Decision: NT Game"];
     
     if (minTotal < GAME_ZONE_MIN && maxTotal >= GAME_ZONE_MIN) {
-        if (balanced) return ["2N", "Decision: Game Invite (Balanced)"];
+        if (balanced) return ["2N", "Decision: Game Invite (Balanced, Max goes to game)"];
         let unbidSuit = s >= 4 ? "S" : (h >= 4 ? "H" : (d >= 4 ? "D" : "C"));
-        return [getCheapestBid(unbidSuit), "Decision: New Suit Forcing"];
+        return [getCheapestBid(unbidSuit), "Decision: New Suit Forcing / 4th Suit Game Force"];
     }
     
     if (ntMax < GAME_ZONE_MIN) return ["2N", "Decision: No fit, park at 2NT"];
@@ -161,37 +161,38 @@ function openingBid(hcp, shape) {
     let balanced = isBalanced(shape);
 
     if (hcp >= 5 && hcp <= 10) {
-        if (s >= 8 && h <= 4 && d <= 4 && c <= 4) return ["4S", "4 Level Preempt S"];
-        if (h >= 8 && s <= 4 && d <= 4 && c <= 4) return ["4H", "4 Level Preempt H"];
-        if (d >= 8 && s <= 4 && h <= 4 && c <= 4) return ["4D", "4 Level Preempt D"];
-        if (c >= 8 && s <= 4 && h <= 4 && d <= 4) return ["4C", "4 Level Preempt C"];
+        if (s >= 8 && h <= 4 && d <= 4 && c <= 4) return ["4S", "มีแต้ม 5-10 และมีไพ่ Spade 8 ใบขึ้นไป (4 Level Preempt)"];
+        if (h >= 8 && s <= 4 && d <= 4 && c <= 4) return ["4H", "มีแต้ม 5-10 และมีไพ่ Heart 8 ใบขึ้นไป (4 Level Preempt)"];
+        if (d >= 8 && s <= 4 && h <= 4 && c <= 4) return ["4D", "มีแต้ม 5-10 และมีไพ่ Diamond 8 ใบขึ้นไป (4 Level Preempt)"];
+        if (c >= 8 && s <= 4 && h <= 4 && d <= 4) return ["4C", "มีแต้ม 5-10 และมีไพ่ Club 8 ใบขึ้นไป (4 Level Preempt)"];
     }
 
     if (hcp >= 5 && hcp <= 10) {
-        if (s === 7 && h <= 4 && d <= 4 && c <= 4) return ["3S", "3 Level Preempt S"];
-        if (h === 7 && s <= 4 && d <= 4 && c <= 4) return ["3H", "3 Level Preempt H"];
-        if (d === 7 && s <= 4 && h <= 4 && c <= 4) return ["3D", "3 Level Preempt D"];
-        if (c === 7 && s <= 4 && h <= 4 && d <= 4) return ["3C", "3 Level Preempt C"];
+        if (s === 7 && h <= 4 && d <= 4 && c <= 4) return ["3S", "มีแต้ม 5-10 และมีไพ่ Spade 7 ใบ (3 Level Preempt)"];
+        if (h === 7 && s <= 4 && d <= 4 && c <= 4) return ["3H", "มีแต้ม 5-10 และมีไพ่ Heart 7 ใบ (3 Level Preempt)"];
+        if (d === 7 && s <= 4 && h <= 4 && c <= 4) return ["3D", "มีแต้ม 5-10 และมีไพ่ Diamond 7 ใบ (3 Level Preempt)"];
+        if (c === 7 && s <= 4 && h <= 4 && d <= 4) return ["3C", "มีแต้ม 5-10 และมีไพ่ Club 7 ใบ (3 Level Preempt)"];
     }
 
     if (balanced && hcp >= 20 && hcp <= 22) return ["2N", "20-22 Balanced"];
-    if (hcp >= 21) return ["2C", "21+ any"];
+    if (hcp >= 21) return ["2C", "21+ any or 18+ playing tricks"];
     if (hcp >= 17 && hcp <= 20 && s >= 5 && h >= 5) return ["2D", "Multi 17-20 M55"];
     
-    if (hcp >= 6 && hcp <= 10 && ((s === 6 || h === 6) && s <= 4 && h <= 4 && d <= 4 && c <= 4)) {
-        return ["2D", "Multi weak 1M"];
+    if (hcp >= 6 && hcp <= 10) {
+        if (s === 6 && h <= 4 && d <= 4 && c <= 4) return ["2D", "Multi weak 1M"];
+        if (h === 6 && s <= 4 && d <= 4 && c <= 4) return ["2D", "Multi weak 1M"];
     }
 
-    if (hcp >= 11 && hcp <= 13 && s === 6 && h <= 4 && d <= 4 && c <= 4) return ["2S", "11-13 S6"];
-    if (hcp >= 11 && hcp <= 13 && h === 6 && s <= 4 && d <= 4 && c <= 4) return ["2H", "11-13 H6"];
+    if (11 <= hcp && hcp <= 13 && s === 6 && h <= 4 && d <= 4 && c <= 4) return ["2S", "11-13 S6"];
+    if (11 <= hcp && hcp <= 13 && h === 6 && s <= 4 && d <= 4 && c <= 4) return ["2H", "11-13 H6"];
 
     if (balanced) {
         if (hcp >= 17 && hcp <= 19) {
             if (s >= 5) return ["1S", "11+ S5"];
             if (h >= 5) return ["1H", "11+ H5"];
-            return ["1C", "big NT 17-19 open 1C"];
+            return ["1C", "big NT 17-19 no M5 open 1C"];
         }
-        if (hcp >= 14 && hcp <= 16) return ["1N", "strong NT 14-16"];
+        if (hcp >= 14 && hcp <= 16) return ["1N", "strong NT 14-16 open 1N"];
         if (hcp >= 11 && hcp <= 13) return ["1C", "weak NT 11-13 open 1C"];
     }
 
@@ -201,41 +202,20 @@ function openingBid(hcp, shape) {
         if (h >= 5) return ["1H", "11+ H5"];
     }
 
-    if (hcp >= 11 && hcp <= 20 && ["1444", "4144", "4441"].includes(shape.toString())) return ["1D", "11+ D4+ unbal"];
-    if (hcp >= 11 && hcp <= 20 && shape.toString() === "4414") return ["1C", "11+ C4+ unbal"];
+    if (hcp >= 11 && hcp <= 20 && ["1444", "4144", "4441"].includes(shape.toString())) return ["1D", "11+ D4+ unbalanced"];
+    if (hcp >= 11 && hcp <= 20 && shape.toString() === "4414") return ["1C", "11+ C4+ unbalanced"];
 
     if (SPECIAL_D4C5.has(shape.toString())) {
-        if (hcp >= 11 && hcp <= 15) return ["1D", "11+ D4+ unbal"];
-        if (hcp >= 16) return ["1C", "11-15 D4C5 open 1D prep 2C"];
+        if (hcp >= 11 && hcp <= 15) return ["1D", "11+ D4+ unbalanced"];
+        if (hcp >= 16) return ["1C", "11-15 D4C5 เปิด 1D เตรียมรีบิด 2C"];
     }
 
     if (hcp >= 11 && hcp <= 20) {
-        if (c > d) return ["1C", "11+ C4+ unbal"];
-        return ["1D", "11+ D4+ unbal"];
+        if (c > d) return ["1C", "11+ C4+ unbalanced"];
+        return ["1D", "11+ D4+ unbalanced"];
     }
 
     return ["PASS", "0-10 no good bid"];
-}
-
-// ==========================================
-// EXACT BRIDGE TABLE & DATABASE
-// ==========================================
-
-const EXACT_BRIDGE_TABLE = [
-    { bid: "1C-3C", status: "decision", p_min: 6, p_max: 10, s_min: 0, h_min: 0, d_min: 0, c_min: 6 },
-    { bid: "1C-2N", status: "decision", p_min: 0, p_max: 5, s_min: 0, h_min: 0, d_min: 0, c_min: 6 },
-    { bid: "1C-2S", status: "decision", p_min: 6, p_max: 10, s_min: 0, h_min: 0, d_min: 5, c_min: 5 },
-    { bid: "1C-2D", status: "decision", p_min: 11, p_max: 12, s_min: 0, h_min: 0, d_min: 0, c_min: 5 },
-    { bid: "1C-2C", priority: 500, status: "decision", p_min: 6, p_max: 10, s_min: 0, h_min: 0, d_min: 6, c_min: 0 },
-];
-
-function getResponseRange(responseStr) {
-    for (let row of EXACT_BRIDGE_TABLE) {
-        if (row.bid === `1C-${responseStr}` || row.bid === responseStr) {
-            return row;
-        }
-    }
-    return { p_min: 6, p_max: 10, s_min: 0, h_min: 0, d_min: 0, c_min: 0 };
 }
 
 // ==========================================
