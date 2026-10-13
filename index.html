@@ -13,7 +13,6 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="js/main.js" defer></script>
   <style>
-    /* สไตล์เพิ่มเติมสำหรับ Popup เปรียบเทียบโหมดใช้งาน */
     .compare-modal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.6); z-index: 2000;
@@ -42,9 +41,35 @@
       .compare-actions { flex-direction: row; }
       .compare-actions .btn { flex: 1; }
     }
+
+    /* สไตล์สำหรับการล็อกฟังก์ชันเมื่อเป็น Guest */
+    .locked-feature {
+      opacity: 0.55;
+      pointer-events: none;
+      position: relative;
+    }
+    .locked-badge {
+      display: none;
+      background: #dc3545;
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+    body.is-guest .locked-feature {
+      opacity: 0.6;
+      filter: grayscale(0.3);
+    }
+    body.is-guest .locked-feature a {
+      pointer-events: none;
+    }
+    body.is-guest .locked-badge {
+      display: inline-block;
+    }
   </style>
 </head>
-<body>
+<body class="is-guest">
 
   <nav class="navbar">
     <a href="index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
@@ -53,7 +78,7 @@
       <a href="system/index.html">ระบบประมูล</a>
       <a href="learn/counting.html">นับไพ่</a>
       <a href="practice/index.html">ฝึกประมูล</a>
-      <a href="analyzer/hand.html">วิเคราะห์</a>
+      <a href="analyzer/hand.html" id="navAnalyzer">วิเคราะห์</a>
       <a href="login.html" class="btn-login">เข้าสู่ระบบ</a>
     </div>
   </nav>
@@ -63,8 +88,7 @@
     <h1>ห้องเรียนประมูลไพ่บริดจ์</h1>
     <p class="lead">ยกระดับทักษะการประมูลบริดจ์ระดับแข่งขัน ด้วยระบบ Shape Before Strength พร้อมแบบฝึกหัดและเครื่องมือวิเคราะห์ครบวงจร</p>
     <div class="hero-actions">
-      <!-- เปลี่ยนให้ปุ่มเปิด Popup เปรียบเทียบโหมด -->
-      <button class="btn btn-primary" onclick="openCompareModal()">เริ่มใช้งานเลย</button>
+      <button class="btn btn-primary" onclick="openCompareModal()">เปลี่ยนโหมดการใช้งาน</button>
       <a href="system/index.html" class="btn btn-ghost">อ่านระบบประมูล</a>
     </div>
   </header>
@@ -78,33 +102,40 @@
 
     <h2 class="section-title">📖 เรียนรู้</h2>
     <div class="grid">
-      <a href="system/index.html" class="card">
+      <!-- ล็อกระบบประมูลคู่มือเชิงลึกสำหรับ Guest -->
+      <div class="card locked-feature" id="cardSystem">
         <div class="card-header">
           <div class="card-icon">📘</div>
-          <span class="badge draft">v0.x กำลังพัฒนา</span>
+          <div>
+            <span class="badge draft">v0.x กำลังพัฒนา</span>
+            <span class="locked-badge">ต้องเข้าสู่ระบบ</span>
+          </div>
         </div>
         <h3>ระบบ Shape Before Strength</h3>
         <p>หลัก Transfer First, Shape Before Strength และ Core Engine สำหรับมือ 16+ พร้อมแผนผังการประมูลที่กดดูได้ทีละชั้น</p>
-        <span class="more">อ่านคู่มือ →</span>
-      </a>
+        <span class="more">กรุณาเข้าสู่ระบบเพื่อใช้งาน →</span>
+        <a href="system/index.html" style="position: absolute; inset:0; z-index:1;" aria-label="ระบบ Shape Before Strength"></a>
+      </div>
 
+      <!-- เปิดให้ใช้: นับแต้ม -->
       <a href="learn/counting.html" class="card">
         <div class="card-header">
           <div class="card-icon">🔢</div>
-          <span class="badge ready">บทเรียน</span>
+          <span class="badge ready">ใช้งานได้ (Guest)</span>
         </div>
         <h3>นับแต้มและนับไพ่</h3>
-        <p>HCP, Distribution, Losing Trick Count การฝึกนับไฟ HCP</p>
+        <p>HCP, Distribution, Losing Trick Count พร้อมมินิเกมฝึกนับแต้ม</p>
         <span class="more">เริ่มเรียน →</span>
       </a>
     </div>
 
     <h2 class="section-title">✏️ ฝึกฝน</h2>
     <div class="grid">
+      <!-- เปิดให้ใช้: ฝึกประมูล -->
       <a href="practice/index.html" class="card">
         <div class="card-header">
           <div class="card-icon">🎯</div>
-          <span class="badge ready">พร้อมใช้</span>
+          <span class="badge ready">ใช้งานได้ (Guest)</span>
         </div>
         <h3>ฝึกการประมูล 4 ระดับ</h3>
         <div class="chips">
@@ -113,7 +144,7 @@
           <span class="chip">Opener Rebid</span>
           <span class="chip">Responder Rebid</span>
         </div>
-        <p>สุ่มมือตามหัวข้อ ตรวจคำตอบตามระบบ พร้อมคำอธิบาย สถิติความแม่นยำ และ Leaderboard</p>
+        <p>สุ่มมือตามหัวข้อ ตรวจคำตอบตามระบบ พร้อมคำอธิบายและตรวจผลเบื้องต้น</p>
         <span class="more">เริ่มการฝึก →</span>
       </a>
 
@@ -130,25 +161,35 @@
 
     <h2 class="section-title">🔍 วิเคราะห์</h2>
     <div class="grid">
-      <a href="analyzer/hand.html" class="card">
+      <!-- ล็อก: วิเคราะห์มือเดียว -->
+      <div class="card locked-feature">
         <div class="card-header">
           <div class="card-icon">🃏</div>
-          <span class="badge ready">มือเดียว</span>
+          <div>
+            <span class="badge ready">มือเดียว</span>
+            <span class="locked-badge">ต้องเข้าสู่ระบบ</span>
+          </div>
         </div>
         <h3>วิเคราะห์ไพ่ในมือ 13 ใบ</h3>
         <p>กรอกไพ่ในมือ แล้วระบบจะประเมิน HCP รูปมือ และแนะนำ Opening Bid / Response ตามระบบ</p>
-        <span class="more">ใช้งานระบบ →</span>
-      </a>
+        <span class="more" style="color: #dc3545;">กรุณาเข้าสู่ระบบเพื่อใช้งาน →</span>
+        <a href="analyzer/hand.html" style="position: absolute; inset:0; z-index:1;"></a>
+      </div>
 
-      <a href="analyzer/deal.html" class="card">
+      <!-- ล็อก: วิเคราะห์ 4 มือ -->
+      <div class="card locked-feature">
         <div class="card-header">
           <div class="card-icon">🧠</div>
-          <span class="badge ready">4 มือ</span>
+          <div>
+            <span class="badge ready">4 มือ</span>
+            <span class="locked-badge">ต้องเข้าสู่ระบบ</span>
+          </div>
         </div>
         <h3>วิเคราะห์ 4 มือ</h3>
-        <p>กรอกไพ่ North, South, East, West หรือ import ไฟล์ PBN/LIN เพื่อดู Auction, Double Dummy และแนวทางการเล่น</p>
-        <span class="more">ใช้งานระบบ →</span>
-      </a>
+        <p>กรอกไพ่ North, South, East, West หรือ import ไฟล์ PBN/LIN เพื่อดู Auction และ Double Dummy</p>
+        <span class="more" style="color: #dc3545;">กรุณาเข้าสู่ระบบเพื่อใช้งาน →</span>
+        <a href="analyzer/deal.html" style="position: absolute; inset:0; z-index:1;"></a>
+      </div>
     </div>
 
     <h2 class="section-title">♠ เล่นจริง</h2>
@@ -177,33 +218,38 @@
         <h3>เลือกรูปแบบการใช้งานของคุณ</h3>
         <button class="compare-close" onclick="closeCompareModal()">&times;</button>
       </div>
-      <p style="font-size: 0.95rem; color: var(--muted); margin-bottom: 15px;">คุณสามารถทดลองฝึกซ้อมได้ทันทีโดยไม่ต้องสมัคร หรือเข้าสู่ระบบเพื่อบันทึกสถิติระยะยาว</p>
+      <p style="font-size: 0.95rem; color: var(--muted); margin-bottom: 15px;">คุณสามารถใช้งานฟังก์ชันฝึกซ้อมพื้นฐานได้ทันที หรือเข้าสู่ระบบเพื่อปลดล็อกฟังก์ชันวิเคราะห์และบันทึกสถิติ</p>
       
       <table class="compare-table">
         <tr>
-          <th>คุณสมบัติ</th>
+          <th>ฟังก์ชัน / สิทธิ์</th>
           <th>👻 ไม่ได้เข้าสู่ระบบ (Guest)</th>
           <th>👤 เข้าสู่ระบบ (Member)</th>
         </tr>
         <tr>
-          <td><strong>เริ่มใช้งาน</strong></td>
-          <td>เล่นได้ทันที ไม่ต้องกรอกข้อมูล</td>
-          <td>สมัคร/เข้าสู่ระบบง่ายๆ</td>
+          <td><strong>นับแต้ม / นับไพ่</strong></td>
+          <td style="color: #2b9348; font-weight: bold;">✓ ใช้งานได้</td>
+          <td style="color: #2b9348; font-weight: bold;">✓ ใช้งานได้</td>
         </tr>
         <tr>
-          <td><strong>บันทึกประวัติ</strong></td>
-          <td>เก็บบนเครื่องนี้เท่านั้น</td>
-          <td>เก็บบนคลาวด์ ดูได้ทุกเครื่อง</td>
+          <td><strong>ฝึกการประมูล 4 ระดับ</strong></td>
+          <td style="color: #2b9348; font-weight: bold;">✓ ใช้งานได้</td>
+          <td style="color: #2b9348; font-weight: bold;">✓ ใช้งานได้</td>
         </tr>
         <tr>
-          <td><strong>สถิติและความแม่นยำ</strong></td>
-          <td>ดูได้เฉพาะรอบปัจจุบัน</td>
-          <td>วิเคราะห์สถิติติย้อนหลังระยะยาว</td>
+          <td><strong>ระบบประมูลเชิงลึก & วิเคราะห์</strong></td>
+          <td style="color: #dc3545;">✕ ล็อก (ต้องล็อกอิน)</td>
+          <td style="color: #2b9348; font-weight: bold;">✓ ปลดล็อกทั้งหมด</td>
+        </tr>
+        <tr>
+          <td><strong>บันทึกสถิติระยะยาว</strong></td>
+          <td style="color: #dc3545;">✕ บันทึกเฉพาะรอบนี้</td>
+          <td style="color: #2b9348; font-weight: bold;">✓ บันทึกบนคลาวด์</td>
         </tr>
       </table>
 
       <div class="compare-actions">
-        <a href="practice/index.html" class="btn btn-ghost" style="border-color: var(--primary); color: var(--primary);">เข้าใช้งานแบบไม่ต้องล็อกอิน →</a>
+        <button class="btn btn-ghost" onclick="setGuestMode()" style="border-color: var(--primary); color: var(--primary);">ใช้งานแบบไม่ล็อกอิน (จำกัดสิทธิ์)</button>
         <a href="login.html" class="btn btn-primary">เข้าสู่ระบบ / สมัครสมาชิก</a>
       </div>
     </div>
@@ -214,8 +260,19 @@
       document.getElementById('compareModal').classList.add('active');
     }
     function closeCompareModal() {
+      document.getElementById('compareModal').classList.add('active'); // บังคับเปิดไว้ถ้ายังไม่เลือก หรือปล่อยให้ปิดได้
       document.getElementById('compareModal').classList.remove('active');
     }
+
+    function setGuestMode() {
+      document.body.classList.add('is-guest');
+      closeCompareModal();
+    }
+
+    // เปิดป๊อปอัปอัตโนมัติทันทีที่เข้าหน้าแรก
+    window.addEventListener('DOMContentLoaded', () => {
+      openCompareModal();
+    });
   </script>
 
 </body>
