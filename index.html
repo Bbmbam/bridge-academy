@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bridge Bidding Classroom - ห้องเรียนประมูลไพ่บริดจ์</title>
+  <meta name="description" content="ฝึกประมูลไพ่บริดจ์ด้วยระบบ Shape Before Strength พร้อมแบบฝึกหัดและเครื่องมือวิเคราะห์มือไพ่">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♠</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
+    <div class="nav-links">
+      <a href="system/index.html">ระบบประมูล</a>
+      <a href="practice/index.html">ฝึกประมูล</a>
+      <a href="analyzer/hand.html">วิเคราะห์</a>
+      <a href="login.html" class="btn-login">เข้าสู่ระบบ</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <p class="eyebrow">Bridge Bidding Classroom</p>
+    <h1>ห้องเรียนประมูลไพ่บริดจ์</h1>
+    <p class="lead">ยกระดับทักษะการประมูลบริดจ์ระดับแข่งขัน ด้วยระบบ Shape Before Strength พร้อมแบบฝึกหัดและเครื่องมือวิเคราะห์ครบวงจร</p>
+    <div class="hero-actions">
+      <a href="practice/index.html" class="btn btn-primary">เริ่มฝึกเลย (ไม่ต้องสมัคร)</a>
+      <a href="system/index.html" class="btn btn-ghost">อ่านระบบประมูล</a>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- แสดงเมื่อเคยฝึกค้างไว้ (เก็บใน localStorage) -->
+    <section id="continue" class="continue" hidden>
+      <span id="continueText"></span>
+      <a id="continueLink" href="#" class="btn btn-primary">ฝึกต่อ →</a>
+    </section>
+
+    <h2 class="section-title">📖 เรียนรู้</h2>
+    <div class="grid">
+      <a href="system/index.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">📘</div>
+          <span class="badge draft">v0.x กำลังพัฒนา</span>
+        </div>
+        <h3>ระบบ Shape Before Strength</h3>
+        <p>หลัก Transfer First, Shape Before Strength และ Core Engine สำหรับมือ 16+ พร้อมแผนผังการประมูลที่กดดูได้ทีละชั้น</p>
+        <span class="more">อ่านคู่มือ →</span>
+      </a>
+
+      <a href="learn/counting.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">🔢</div>
+          <span class="badge ready">บทเรียน</span>
+        </div>
+        <h3>นับแต้มและนับไพ่</h3>
+        <p>HCP, Distribution, Losing Trick Count และการนับไพ่ระหว่างเล่น พร้อมแบบฝึกจับเวลา</p>
+        <span class="more">เริ่มเรียน →</span>
+      </a>
+    </div>
+
+    <h2 class="section-title">✏️ ฝึกฝน</h2>
+    <div class="grid">
+      <a href="practice/index.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">🎯</div>
+          <span class="badge ready">พร้อมใช้</span>
+        </div>
+        <h3>ฝึกการประมูล 4 ระดับ</h3>
+        <div class="chips">
+          <span class="chip">Opening</span>
+          <span class="chip">Response</span>
+          <span class="chip">Opener Rebid</span>
+          <span class="chip">Responder Rebid</span>
+        </div>
+        <p>สุ่มมือตามหัวข้อ ตรวจคำตอบตามระบบ พร้อมคำอธิบาย สถิติความแม่นยำ และ Leaderboard</p>
+        <span class="more">เริ่มการฝึก →</span>
+      </a>
+
+      <div class="card disabled" aria-disabled="true">
+        <div class="card-header">
+          <div class="card-icon">🧩</div>
+          <span class="badge soon">เร็วๆ นี้</span>
+        </div>
+        <h3>โจทย์ประจำวัน</h3>
+        <p>โจทย์ใหม่ทุกวัน ทั้งการประมูลและการเล่นไพ่ แล้วเทียบคำตอบกับผู้เล่นคนอื่น</p>
+        <span class="more">เร็วๆ นี้</span>
+      </div>
+    </div>
+
+    <h2 class="section-title">🔍 วิเคราะห์</h2>
+    <div class="grid">
+      <a href="analyzer/hand.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">🃏</div>
+          <span class="badge ready">มือเดียว</span>
+        </div>
+        <h3>วิเคราะห์ไพ่ในมือ 13 ใบ</h3>
+        <p>กรอกไพ่ในมือ แล้วระบบจะประเมิน HCP รูปมือ และแนะนำ Opening Bid / Response ตามระบบ</p>
+        <span class="more">ใช้งานระบบ →</span>
+      </a>
+
+      <a href="analyzer/deal.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">🧠</div>
+          <span class="badge ready">4 มือ</span>
+        </div>
+        <h3>วิเคราะห์ 4 มือ</h3>
+        <p>กรอกไพ่ North, South, East, West หรือ import ไฟล์ PBN/LIN เพื่อดู Auction, Double Dummy และแนวทางการเล่น</p>
+        <span class="more">ใช้งานระบบ →</span>
+      </a>
+    </div>
+
+    <h2 class="section-title">♠ เล่นจริง</h2>
+    <div class="grid">
+      <div class="card disabled" aria-disabled="true">
+        <div class="card-header">
+          <div class="card-icon">🤖</div>
+          <span class="badge soon">เร็วๆ นี้</span>
+        </div>
+        <h3>เล่นกับบอท / เล่นออนไลน์</h3>
+        <p>เล่นครบทั้งประมูลและเล่นไพ่แบบ BBO พร้อม AI วิเคราะห์ความแม่นยำหลังจบบอร์ด</p>
+        <span class="more">เร็วๆ นี้</span>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>ระบบ Shape Before Strength v0.x · <a href="https://github.com/YOUR-NAME/bridge-academy">ดูโค้ดบน GitHub</a> · <a href="privacy.html">นโยบายความเป็นส่วนตัว</a></p>
+    <p>&copy; 2026 Bridge Bidding Classroom</p>
+  </footer>
+
+  <script>
+    // แสดงปุ่ม "ฝึกต่อ" ถ้าผู้ใช้เคยฝึกค้างไว้ (ใช้ได้แม้ไม่ล็อกอิน)
+    const last = JSON.parse(localStorage.getItem('lastPractice') || 'null');
+    if (last) {
+      document.getElementById('continue').hidden = false;
+      document.getElementById('continueText').textContent =
+        `คุณฝึกค้างไว้: ${last.topic} (${last.done}/${last.total} ข้อ)`;
+      document.getElementById('continueLink').href = last.url;
+    }
+  </script>
+</body>
+</html>
