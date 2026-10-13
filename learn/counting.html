@@ -21,16 +21,12 @@
       }
     }
 
-    /* แก้ไขให้สารบัญเกาะติดหน้าจอ (Sticky) ตลอดเวลา */
     .toc-card {
       background: #fff;
       border-radius: var(--radius);
       padding: 16px;
       box-shadow: 0 6px 16px rgba(0,0,0,.05);
       border-top: 4px solid var(--primary);
-      position: sticky;
-      top: 80px;
-      z-index: 10;
     }
     .toc-card h3 {
       font-size: 1rem;
@@ -110,7 +106,8 @@
 
     <div class="learn-layout">
       
-      <aside>
+      <!-- บังคับเกาะติดด้วย inline style ตรงนี้ -->
+      <aside style="position: sticky; top: 80px; align-self: start;">
         <nav class="toc-card" aria-label="สารบัญบทเรียน">
           <h3>📑 สารบัญเนื้อหา</h3>
           <ul class="toc-list">
