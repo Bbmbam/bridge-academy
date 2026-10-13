@@ -195,7 +195,7 @@
       document.getElementById('bridgeTable').innerHTML = html;
     }
 
-    function checkAnswer() {
+        function checkAnswer() {
       let val = parseInt(document.getElementById('userAns').value);
       let fb = document.getElementById('gameFeedback');
       if(isNaN(val)) {
@@ -207,14 +207,17 @@
       totalPlayed++;
       if(val === currentCorrectHCP) {
         totalCorrect++;
-        fb.textContent = `🎉 ถูกต้อง! มือนี้มี HCP รวม ${currentCorrectHCP} แต้ม เก่งมากครับ!`;
+        fb.textContent = `🎉 ถูกต้อง! มือนี้มี HCP รวม ${currentCorrectHCP} แต้ม เก่งมากครับ! กำลังไปข้อถัดไป...`;
         fb.style.color = '#74c69d';
-        setTimeout(generateRandomHand, 2000); // โหลดมือใหม่หลัง 2 วิ
+        document.getElementById('scoreText').textContent = `ถูก ${totalCorrect}/${totalPlayed}`;
+        setTimeout(generateRandomHand, 1500); // ถูกต้องรอ 1.5 วิแล้วเปลี่ยนข้อ
       } else {
-        fb.textContent = `❌ ยังไม่ถูกต้องครับ ลองนับใหม่อีกที (คำตอบที่ถูกคือ ${currentCorrectHCP} แต้ม)`;
+        // ตอบผิด: แจ้งเตือนแล้วสุ่มข้อใหม่ทันทีโดยไม่ให้ค้างคา
+        fb.textContent = `❌ ผิดครับ! คำตอบที่ถูกคือ ${currentCorrectHCP} แต้ม (กำลังเปลี่ยนเป็นข้อใหม่...)`;
         fb.style.color = '#ff6b6b';
+        document.getElementById('scoreText').textContent = `ถูก ${totalCorrect}/${totalPlayed}`;
+        setTimeout(generateRandomHand, 2000); // ตอบผิดรอ 2 วิให้เห็นข้อความ แล้วเปลี่ยนข้อใหม่ทันที
       }
-      document.getElementById('scoreText').textContent = `ถูก ${totalCorrect}/${totalPlayed}`;
     }
 
     // เริ่มเกมครั้งแรกตอนเปิดหน้าเว็บ
