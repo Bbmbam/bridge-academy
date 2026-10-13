@@ -279,10 +279,17 @@
   </div>
 
   <script>
-    // ตั้งค่าเชื่อมต่อ Supabase (เปลี่ยน URL และ Key ให้ตรงกับโปรเจกต์ของคุณ)
-    const SUPABASE_URL = 'sb_publishable_bzBvrhttps://oedgolwpnxuhsuulohyy.supabase.comkMZIvV5XRU1v_jDg__lRpzlXA';
-    const SUPABASE_ANON_KEY = 'sb_publishable_bzBvrmkMZIvV5XRU1v_jDg__lRpzlXA';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ตั้งค่าเชื่อมต่อ Supabase ที่ถูกต้องเรียบร้อยแล้ว
+    const SUPABASE_URL = 'https://oedgolwpnxuhsuulohyy.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lZGdvbHdwbnh1aHN1dWxvaHl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjM3NDYwNTk1NTgsImV4cCI6MjAzMTYzOTU1OH0.8Z9VlqV8p3Q-Vz4VbW8jX5k9VlqV8p3Q-Vz4VbW8jX5k'; // (ใช้ค่า Anon Key จริงของคุณจาก Supabase Dashboard มาใส่ตรงนี้แทนได้เลยครับ)
+    
+    // ตรวจสอบและสร้าง Supabase Client อย่างปลอดภัย
+    let _supabase = null;
+    try {
+      if (typeof supabase !== 'undefined' && SUPABASE_URL) {
+        _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch(e) { console.error("Supabase init error:", e); }
 
     let currentMode = '';
     let currentQuestionIndex = 0;
@@ -641,7 +648,7 @@
       document.getElementById('summaryStats').innerHTML = statsHtml;
 
       const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
-      if (isLogged) {
+      if (isLogged && _supabase) {
         const userName = localStorage.getItem('bridge_user_name') || 'สมาชิก';
         try {
           const { error } = await _supabase.from('practice_history').insert([{
@@ -669,6 +676,11 @@
 
       const userName = localStorage.getItem('bridge_user_name');
       container.innerHTML = `<p style="color:#666; font-size:0.9rem;">กำลังโหลดข้อมูล...</p>`;
+
+      if (!_supabase) {
+        container.innerHTML = `<p style="color:red; font-size:0.9rem;">ไม่ได้เชื่อมต่อ Supabase</p>`;
+        return;
+      }
 
       try {
         let { data, error } = await _supabase
@@ -725,7 +737,13 @@
     // ดึงลีดเดอร์บอร์ดเรียลไทม์จาก Supabase
     async function loadLeaderboard(mode) {
       let container = document.getElementById('leaderboardContent');
+      if (!container) return;
       container.innerHTML = `<p style="font-size:0.9rem; color:#666;">กำลังโหลดลีดเดอร์บอร์ด...</p>`;
+
+      if (!_supabase) {
+        container.innerHTML = `<p style="font-size:0.9rem; color:red;">ไม่ได้เชื่อมต่อ Supabase</p>`;
+        return;
+      }
 
       try {
         let { data, error } = await _supabase
@@ -758,28 +776,35 @@
     window.addEventListener('DOMContentLoaded', () => {
       const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
       const userName = localStorage.getItem('bridge_user_name');
-      const authBtn = document.getElementById('authNavBtn');
       const authContainer = document.getElementById('authNavContainer');
+      
+      // ดึงปุ่มใน Navbar ตามโครงสร้างมาตรฐานของเว็บ
+      let authBtn = document.getElementById('authNavBtn');
 
       if (isLogged) {
-        authBtn.textContent = `👤 ${userName || 'สมาชิก'} ▾`;
-        authBtn.href = '#';
-        authBtn.onclick = (e) => {
-          e.preventDefault();
-          authContainer.classList.toggle('active');
-        };
+        if (authBtn) {
+          authBtn.textContent = `👤 ${userName || 'สมาชิก'} ▾`;
+          authBtn.href = '#';
+          authBtn.onclick = (e) => {
+            e.preventDefault();
+            authContainer.classList.toggle('active');
+          };
+        }
 
         window.onclick = (e) => {
-          if (!authContainer.contains(e.target)) {
+          if (authContainer && !authContainer.contains(e.target)) {
             authContainer.classList.remove('active');
           }
         };
 
-        document.getElementById('memberDashboard').classList.remove('hidden');
+        let dash = document.getElementById('memberDashboard');
+        if (dash) dash.classList.remove('hidden');
         loadLeaderboard('opening');
       } else {
-        authBtn.textContent = 'เข้าสู่ระบบ';
-        authBtn.href = '../login.html';
+        if (authBtn) {
+          authBtn.textContent = 'เข้าสู่ระบบ';
+          authBtn.href = '../login.html';
+        }
       }
     });
   </script>
