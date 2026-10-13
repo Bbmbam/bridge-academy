@@ -89,6 +89,11 @@
 
     .pause-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #fff; display: none; text-align: center; padding: 20px; }
     
+    /* สไตล์ตารางสถิติและลีดเดอร์บอร์ด */
+    .stats-table, .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95rem; text-align: left; }
+    .stats-table th, .stats-table td, .leaderboard-table th, .leaderboard-table td { padding: 10px; border-bottom: 1px solid #eee; }
+    .stats-table th, .leaderboard-table th { background: #f8f9fa; color: var(--primary); }
+    
     .hidden { display: none !important; }
   </style>
 </head>
@@ -137,6 +142,16 @@
           <div>
             <button class="menu-btn disabled">♣ Responder Rebid (ปิดใช้งาน)</button>
           </div>
+        </div>
+
+        <!-- ส่วนแสดงสถิติและลีดเดอร์บอร์ดหน้าแรกเฉพาะสมาชิก -->
+        <div id="memberDashboard" class="hidden" style="margin-top: 35px; border-top: 2px dashed #eee; padding-top: 20px;">
+          <h3>🏆 ลีดเดอร์บอร์ดผู้ฝึกซ้อม (Leaderboard)</h3>
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <button class="btn" style="background:var(--primary); color:#fff; padding:6px 12px; font-size:0.85rem;" onclick="switchLeaderboard('opening')">Opening</button>
+            <button class="btn" style="background:#e9ecef; color:#333; padding:6px 12px; font-size:0.85rem;" onclick="switchLeaderboard('response_1c')">Response 1C</button>
+          </div>
+          <div id="leaderboardContent"></div>
         </div>
       </div>
 
@@ -194,11 +209,19 @@
         <div id="feedbackArea" class="hidden"></div>
       </div>
 
-      <!-- 3. หน้าสรุปผลลัพธ์ -->
+      <!-- 3. หน้าสรุปผลลัพธ์ (พร้อมปุ่มครบครันตามรีเควส) -->
       <div id="summaryView" class="quiz-box hidden" style="text-align: center;">
         <h2>🎉 สรุปผลการฝึกซ้อม</h2>
         <div id="summaryStats" style="margin: 20px 0; font-size: 1.1rem; line-height: 1.8;"></div>
-        <button class="btn btn-primary" onclick="returnToMenu()" type="button">← กลับสู่หน้าเลือกเมนู</button>
+        
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+          <button class="btn btn-primary" onclick="retryPractice()" type="button">🔄 ฝึกบทเดิมซ้ำ</button>
+          <button class="btn" style="background:#52b788; color:#fff;" onclick="returnToMenu()" type="button">📂 เลือกฝึกบทอื่น</button>
+          <button class="btn member-only-btn hidden" style="background:#4361ee; color:#fff;" onclick="showMyStats()" type="button">📊 สถิติตัวเอง</button>
+        </div>
+
+        <!-- พื้นที่แสดงประวัติส่วนตัวย้อนหลัง (สำหรับสมาชิก) -->
+        <div id="myStatsContainer" class="hidden" style="margin-top: 25px; text-align: left; border-top: 1px solid #eee; padding-top: 15px;"></div>
       </div>
 
     </main>
@@ -371,6 +394,10 @@
       loadQuestion();
     }
 
+    function retryPractice() {
+      startPractice(currentMode);
+    }
+
     function startTimer() {
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
@@ -491,13 +518,13 @@
       document.getElementById('selectedAnswerDisplay').textContent = txt ? `คำตอบของคุณ: ${txt}` : 'ยังไม่ได้เลือกคำตอบ';
     }
 
-    // ฟังก์ชันช่วยทำความสะอาดข้อความสตริงคำตอบให้ตรงกันเสมอ (Normalize)
     function normalizeAnswer(str) {
       return (str || "").toString().trim().toUpperCase()
         .replace(/♣/g, 'C')
         .replace(/♦/g, 'D')
         .replace(/♥/g, 'H')
-        .replace(/♠/g, 'S');
+        .replace(/♠/g, 'S')
+        .replace(/N\.?T\.?/g, 'NT');
     }
 
     function submitAnswer() {
@@ -513,8 +540,6 @@
       totalAnswered++;
 
       let q = questionsList[currentQuestionIndex];
-      
-      // เปรียบเทียบคำตอบแบบ Normalize แล้ว (หมดปัญหาเรื่องสัญลักษณ์อักขระพิเศษ)
       let isCorrect = (normalizeAnswer(userAns) === normalizeAnswer(q.correct));
       
       let fbArea = document.getElementById('feedbackArea');
@@ -582,22 +607,86 @@
       `;
       document.getElementById('summaryStats').innerHTML = statsHtml;
 
-      if (localStorage.getItem('bridge_user_logged') === 'true') {
+      // บันทึกสถิติลง localStorage สำหรับสมาชิก
+      const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
+      if (isLogged) {
+        const userName = localStorage.getItem('bridge_user_name') || 'สมาชิก';
         let history = JSON.parse(localStorage.getItem('bridge_practice_history') || '[]');
-        history.push({
-          date: new Date().toLocaleString(),
+        let record = {
+          user: userName,
+          date: new Date().toLocaleDateString(),
           mode: currentMode,
           score: scoreCorrect,
-          time: `${min}ม ${sec}ว`
-        });
+          timeSec: secondsElapsed,
+          timeStr: `${min}ม ${sec}ว`,
+          avg: avgSec
+        };
+        history.push(record);
         localStorage.setItem('bridge_practice_history', JSON.stringify(history));
+
+        // อัปเดต Leaderboard กล่อมจำลอง
+        let leaderboard = JSON.parse(localStorage.getItem('bridge_leaderboard') || '[]');
+        leaderboard.push(record);
+        localStorage.setItem('bridge_leaderboard', JSON.stringify(leaderboard));
+
+        document.querySelectorAll('.member-only-btn').forEach(b => b.classList.remove('hidden'));
       }
+    }
+
+    function showMyStats() {
+      let history = JSON.parse(localStorage.getItem('bridge_practice_history') || '[]');
+      let container = document.getElementById('myStatsContainer');
+      container.classList.toggle('hidden');
+
+      if (container.classList.contains('hidden')) return;
+
+      if (history.length === 0) {
+        container.innerHTML = `<p style="color:#666; font-size:0.9rem;">ยังไม่มีประวัติการฝึกซ้อม</p>`;
+        return;
+      }
+
+      let html = `<h4>📊 ประวัติการฝึกซ้อมส่วนตัว</h4>
+                  <table class="stats-table">
+                    <tr><th>วันที่</th><th>หมวด</th><th>คะแนน</th><th>เวลา</th><th>เฉลี่ย/ข้อ</th></tr>`;
+      history.slice(-5).reverse().forEach(h => {
+        html += `<tr><td>${h.date}</td><td>${h.mode}</td><td>${h.score}/20</td><td>${h.timeStr}</td><td>${h.avg}s</td></tr>`;
+      });
+      html += `</table>`;
+      container.innerHTML = html;
     }
 
     function returnToMenu() {
       document.getElementById('summaryView').classList.add('hidden');
       document.getElementById('cheatSheetSide').classList.add('hidden');
+      document.getElementById('myStatsContainer').classList.add('hidden');
       document.getElementById('menuView').classList.remove('hidden');
+      loadLeaderboard('opening');
+    }
+
+    function switchLeaderboard(mode) {
+      loadLeaderboard(mode);
+    }
+
+    function loadLeaderboard(mode) {
+      let leaderboard = JSON.parse(localStorage.getItem('bridge_leaderboard') || '[]');
+      // กรองตามหมวด และเรียงลำดับคะแนนมากไปน้อย ถ้าเท่ากันเอาเวลาน้อยไปมาก
+      let filtered = leaderboard.filter(item => item.mode === mode);
+      filtered.sort((a, b) => b.score - a.score || a.timeSec - b.timeSec);
+
+      let container = document.getElementById('leaderboardContent');
+      if (filtered.length === 0) {
+        container.innerHTML = `<p style="font-size:0.9rem; color:#666;">ยังไม่มีข้อมูลการฝึกในหมวดนี้</p>`;
+        return;
+      }
+
+      let html = `<table class="leaderboard-table">
+                    <tr><th>อันดับ</th><th>ผู้ใช้</th><th>คะแนน</th><th>เวลา</th><th>วันที่</th></tr>`;
+      filtered.slice(0, 5).forEach((item, index) => {
+        let rankIcon = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `${index+1}`));
+        html += `<tr><td>${rankIcon}</td><td>${item.user}</td><td><strong>${item.score}/20</strong></td><td>${item.timeStr}</td><td>${item.date}</td></tr>`;
+      });
+      html += `</table>`;
+      container.innerHTML = html;
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -616,6 +705,10 @@
             window.location.href = '../index.html';
           }
         };
+
+        // แสดงลีดเดอร์บอร์ดในหน้าเมนูหลักสำหรับสมาชิก
+        document.getElementById('memberDashboard').classList.remove('hidden');
+        loadLeaderboard('opening');
       }
     });
   </script>
