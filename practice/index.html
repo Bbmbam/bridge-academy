@@ -16,6 +16,16 @@
     }
     body { font-family: 'Sarabun', sans-serif; background: #f4f7f5; margin: 0; color: #333; }
     
+    /* ปรับแต่ง Navbar ให้ลิงก์ขวาบนสว่างชัดเจนทุกหน้า */
+    .navbar .nav-links a {
+      color: #ffffff !important;
+      opacity: 0.9;
+    }
+    .navbar .nav-links a:hover {
+      opacity: 1;
+      color: var(--accent) !important;
+    }
+
     .practice-container { max-width: 1200px; margin: 30px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
     @media(max-width: 900px) { .practice-container { grid-template-columns: 1fr; } }
 
@@ -35,21 +45,22 @@
     .classic-card-row { display: flex; align-items: center; margin: 12px 0; font-size: 1.1rem; }
     .classic-suit-icon { width: 30px; font-size: 1.3rem; text-align: center; font-weight: bold; }
     
-    /* ปรับสีโพดำให้เข้มขึ้น มองเห็นชัดเจน */
-    .suit-s { color: #f8f9fa; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+    /* สีดอกไพ่ให้คมชัดบนพื้นเข้ม */
+    .suit-s { color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
     .suit-c { color: #52b788; }
     .suit-h, .suit-d { color: #ff6b6b; }
     
-    /* ดีไซน์ไพ่ซ้อนเหลื่อมแบบ BBO */
+    /* ดีไซน์ไพ่ซ้อนเหลื่อมแบบ BBO และแก้ปัญหาโพดำสีขาวกลืนกับไพ่ */
     .classic-cards { display: flex; position: relative; height: 55px; margin-left: 10px; flex: 1; overflow-x: auto; align-items: center; }
-    .playing-card { background: #fff; color: #111; width: 36px; height: 50px; border-radius: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; font-size: 0.95rem; box-shadow: -2px 2px 6px rgba(0,0,0,0.4); position: absolute; border: 1px solid #ccc; transition: transform 0.2s; }
-    .playing-card:hover { z-index: 10; transform: translateY(-5px); }
+    .playing-card { background: #fff; color: #111; width: 36px; height: 50px; border-radius: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; font-size: 0.95rem; box-shadow: -2px 2px 6px rgba(0,0,0,0.4); position: absolute; border: 1px solid #ccc; transition: transform 0.2s; z-index: 2; }
+    .playing-card:hover { z-index: 20 !important; transform: translateY(-5px); }
     .playing-card.red { color: #d90429; }
+    .playing-card.black { color: #111111; } /* บังคับตัวหนังสือบนไพ่โพดำ/ดอกจิกเป็นสีดำสนิท */
 
-    /* ปุ่มควบคุมมุมมองและเสียง ขยายขนาดพื้นที่กดให้ง่ายขึ้น */
-    .hand-controls { position: absolute; top: 12px; right: 12px; display: flex; gap: 6px; z-index: 5; }
-    .action-badge-btn { background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.4); color: #fff; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-family: 'Sarabun'; font-weight: bold; }
-    .action-badge-btn:hover { background: rgba(255,255,255,0.4); }
+    /* ปุ่มควบคุมมุมมองและเสียง ขยายขนาดพื้นที่กดให้ง่ายขึ้นบนมือถือ */
+    .hand-controls { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 25; }
+    .action-badge-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.6); color: #fff; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-family: 'Sarabun'; font-weight: bold; }
+    .action-badge-btn:hover { background: rgba(0,0,0,0.7); }
 
     /* Bidding Box */
     .bidding-box { background: #112d21; border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 20px; }
@@ -83,7 +94,7 @@
     <div class="nav-links" id="navLinks">
       <a href="../system/index.html">ระบบประมูล</a>
       <a href="../learn/counting.html">นับไพ่</a>
-      <a href="index.html" style="font-weight: bold; color: var(--primary);">ฝึกประมูล</a>
+      <a href="index.html" style="font-weight: bold; color: var(--accent);">ฝึกประมูล</a>
       <a href="../analyzer/hand.html">วิเคราะห์</a>
       <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
     </div>
@@ -135,8 +146,8 @@
         <!-- กล่องแสดงไพ่ในมือ -->
         <div class="hand-display-box" id="handBox">
           <div class="hand-controls">
-            <button class="action-badge-btn" onclick="toggleCardView()" id="viewToggleBtn">🔄 มุมมองแบดจ์</button>
-            <button class="action-badge-btn" onclick="toggleSound()" id="soundToggleBtn">🔊 เปิดเสียง</button>
+            <button class="action-badge-btn" onclick="toggleCardView()" id="viewToggleBtn" type="button">🔄 มุมมองแบดจ์</button>
+            <button class="action-badge-btn" onclick="toggleSound()" id="soundToggleBtn" type="button">🔊 เปิดเสียง</button>
           </div>
           <div style="font-size: 0.95rem; margin-bottom: 12px; opacity: 0.9;" id="questionPrompt">คุณเป็นผู้เปิดประมูลคนแรก (Dealer) จะประมูลอะไร?</div>
           
@@ -190,7 +201,7 @@
       <div class="cheat-card">
         <h4>
           <span>📌 Cheat Sheet</span>
-          <button class="action-badge-btn" style="background:#1b4332; font-size:0.75rem; padding:4px 10px;" onclick="toggleCheatSheet()" id="cheatToggleBtn">📂 แสดง</button>
+          <button class="action-badge-btn" style="background:#1b4332; font-size:0.75rem; padding:4px 10px;" onclick="toggleCheatSheet()" id="cheatToggleBtn" type="button">📂 แสดง</button>
         </h4>
         <div class="cheat-body" id="cheatSheetBody" style="display: none;">
           <div id="cheatSheetContent">
@@ -203,7 +214,7 @@
 
   </div>
 
-  <!-- Overlay หน้าจอตอนกด Pause (ซ่อนหน้าไพ่มิดชิด) -->
+  <!-- Overlay หน้าจอตอนกด Pause -->
   <div id="pauseOverlay" class="pause-overlay">
     <h2>⏸ พักการฝึกซ้อมชั่วคราว</h2>
     <p style="color: #adb5bd; margin-top: 10px;">หน้าไพ่และเวลาถูกซ่อนไว้เพื่อความยุติธรรม ป้องกันการแอบดูโจทย์</p>
@@ -221,7 +232,7 @@
     let isPaused = false;
     let soundEnabled = true;
     let selectedCardView = 'classic'; 
-    let cheatSheetVisible = false; // ค่าเริ่มต้นพับซ่อนไว้
+    let cheatSheetVisible = false; 
     let currentSelectedBid = { level: '', suit: '' };
     let isAnswerSubmitted = false;
     let countdownInterval = null;
@@ -272,7 +283,7 @@
       sub.style.display = sub.style.display === 'block' ? 'none' : 'block';
     }
 
-    // สร้างชุดโจทย์ 20 ข้อ พร้อมคำนวณแต้ม HCP แม่นยำ
+    // สร้างโจทย์ 20 ข้อ โดยใช้ฟังก์ชันจริงจาก dss-engine.js ในการประเมินคำตอบ
     function generateQuestions(mode) {
       let list = [];
       const rankOrder = {'A':14, 'K':13, 'Q':12, 'J':11, '10':10, '9':9, '8':8, '7':7, '6':6, '5':5, '4':4, '3':3, '2':2};
@@ -292,31 +303,15 @@
         let dCards = generateSuitCards(dCount).sort((a,b)=>rankOrder[b]-rankOrder[a]);
         let cCards = generateSuitCards(cCount).sort((a,b)=>rankOrder[b]-rankOrder[a]);
 
-        // คำนวณแต้ม HCP จริงจากไพ่ที่ถือ
         let hcp = 0;
         [...sCards, ...hCards, ...dCards, ...cCards].forEach(c => {
           if (cardValues[c]) hcp += cardValues[c];
         });
 
-        let correctBid = "Pass";
-        let reasonText = "แต้มไม่ถึงเกณฑ์เปิดประมูล (0-10 HCP)";
-
-        if (hcp >= 14 && hcp <= 16 && Math.max(sCount,hCount,dCount,cCount) <= 4) {
-          correctBid = "1NT";
-          reasonText = "ไพ่สมดุล (Balanced) มีแต้ม 14-16 HCP";
-        } else if (hCount >= 5 && hcp >= 11) {
-          correctBid = "1♥";
-          reasonText = "มีไพ่ Heart 5+ ใบ และแต้มอยู่ในช่วง 11-20 HCP";
-        } else if (sCount >= 5 && hcp >= 11) {
-          correctBid = "1♠";
-          reasonText = "มีไพ่ Spade 5+ ใบ และแต้มอยู่ในช่วง 11-20 HCP";
-        } else if (hcp >= 21) {
-          correctBid = "2♣";
-          reasonText = "มีแต้มสูงมาก 21+ HCP หรือ 8.5+ Playing Tricks";
-        } else if (hcp >= 11) {
-          correctBid = "1♦";
-          reasonText = "เปิดตามโครงสร้างมาตรฐาน Unbalanced (♦ 4+ หรือยาวกว่า)";
-        }
+        // เรียกใช้ฟังก์ชันมาตรฐานจาก dss-engine.js เพื่อความแม่นยำ 100%
+        let engineRes = openingBid(hcp, shapeStr);
+        let correctBid = engineRes[0];
+        let reasonText = engineRes[1];
 
         list.push({
           id: i,
@@ -348,7 +343,7 @@
       totalAnswered = 0;
       secondsElapsed = 0;
       isPaused = false;
-      cheatSheetVisible = false; // ซ่อน Cheat Sheet ไว้ตอนเริ่ม
+      cheatSheetVisible = false; 
 
       questionsList = generateQuestions(mode);
 
@@ -431,7 +426,8 @@
           } else {
             arr.forEach((c, idx) => {
               let leftOffset = idx * 24; 
-              html += `<div class="playing-card ${s.isRed ? 'red' : ''}" style="left: ${leftOffset}px; z-index: ${idx};">
+              let cardColorClass = s.isRed ? 'red' : 'black';
+              html += `<div class="playing-card ${cardColorClass}" style="left: ${leftOffset}px; z-index: ${idx};">
                         <span style="font-size:0.9rem; line-height:1;">${c}</span>
                         <span style="font-size:0.8rem; line-height:1;">${s.symbol}</span>
                        </div>`;
@@ -517,14 +513,13 @@
 
       document.getElementById('quizScore').textContent = `ถูก: ${scoreCorrect}/${totalAnswered}`;
 
-      // เพิ่มปุ่มกดไปข้อถัดไปทันที พร้อมตัวนับถอยหลัง 30 วินาที
       let countdown = 30;
       let timerBox = document.createElement('div');
       timerBox.style.cssText = "margin-top:12px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; color:#555;";
       timerBox.id = "autoNextContainer";
       timerBox.innerHTML = `
         <span id="autoNextTimer">ระบบจะเปลี่ยนข้ออัตโนมัติใน ${countdown} วินาที...</span>
-        <button class="btn btn-primary" style="padding:6px 14px; font-size:0.85rem;" onclick="nextQuestion()">→ ไปข้อถัดไป</button>
+        <button class="btn btn-primary" style="padding:6px 14px; font-size:0.85rem;" onclick="nextQuestion()" type="button">→ ไปข้อถัดไป</button>
       `;
       fbArea.appendChild(timerBox);
 
