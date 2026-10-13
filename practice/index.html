@@ -4,32 +4,562 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1b4332">
-  <title>ฝึกการประมูล - Bridge Classroom</title>
+  <title>ฝึกประมูล Shape Before Strength - Bridge Classroom</title>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
-  <script src="../js/main.js" defer></script>
+  <script src="../js/dss-engine.js" defer></script>
+  <script src="cheatsheets.js" defer></script>
+  <style>
+    :root {
+      --primary-dark: #112d21;
+      --card-bg: #1b4332;
+    }
+    body { font-family: 'Sarabun', sans-serif; background: #f4f7f5; margin: 0; color: #333; }
+    
+    .practice-container { max-width: 1200px; margin: 30px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+    @media(max-width: 900px) { .practice-container { grid-template-columns: 1fr; } }
+
+    /* เมนูเลือกหมวดหมู่ */
+    .menu-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
+    .menu-btn { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 18px; text-align: left; cursor: pointer; transition: all 0.2s; font-family: 'Sarabun'; font-size: 1rem; font-weight: bold; color: var(--primary); }
+    .menu-btn:hover:not(.disabled) { background: var(--accent-light); border-color: var(--primary); transform: translateY(-2px); }
+    .menu-btn.disabled { opacity: 0.4; cursor: not-allowed; background: #e9ecef; color: #6c757d; }
+    
+    .sub-menu-container { margin-top: 10px; display: none; padding-left: 15px; border-left: 3px solid var(--primary); }
+
+    /* พื้นที่ทำแบบฝึกหัด */
+    .quiz-box { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .quiz-header { display: flex; justify-content: space-between; align-items: center; background: #e9ecef; padding: 10px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; }
+    
+    /* กล่องแสดงไพ่ (โหมดคลาสสิกเป็นหลัก) */
+    .hand-display-box { background: var(--card-bg); border-radius: 12px; padding: 24px; color: #fff; margin-bottom: 20px; position: relative; }
+    .classic-card-row { display: flex; align-items: center; margin: 10px 0; font-size: 1.2rem; }
+    .classic-suit-icon { width: 35px; font-size: 1.4rem; text-align: center; }
+    .suit-s, .suit-c { color: #adb5bd; }
+    .suit-h, .suit-d { color: #ff6b6b; }
+    .classic-cards { display: flex; gap: 6px; flex-wrap: wrap; margin-left: 10px; }
+    .playing-card { background: #fff; color: #111; width: 32px; height: 45px; border-radius: 4px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+    .playing-card.red { color: #d90429; }
+
+    /* ปุ่มสลับมุมมองไพ่ */
+    .view-toggle { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+    .view-toggle:hover { background: rgba(255,255,255,0.3); }
+
+    /* Bidding Box */
+    .bidding-box { background: #112d21; border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 20px; }
+    .bid-levels, .bid-suits { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .bid-btn { background: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Sarabun'; transition: 0.1s; }
+    .bid-btn:hover { background: var(--accent-light); }
+    .bid-btn.selected { background: #ffb703; color: #000; }
+
+    /* แผงควบคุมและ Cheat Sheet */
+    .cheat-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
+    .cheat-card h4 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; }
+    .cheat-card ul { padding-left: 18px; margin: 0; font-size: 0.9rem; line-height: 1.6; }
+
+    /* เอฟเฟกต์ตอบถูกผิด */
+    .feedback-alert { padding: 15px; border-radius: 8px; font-weight: bold; margin-top: 15px; text-align: center; animation: fadeIn 0.3s; }
+    .feedback-correct { background: #d8f3dc; color: #1b4332; border: 1px solid #52b788; }
+    .feedback-wrong { background: #ffe3e3; color: #9b2226; border: 1px solid #e56b6f; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Modal พักการฝึก (Pause) */
+    .pause-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #fff; display: none; }
+    
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body>
 
+  <!-- Navbar -->
   <nav class="navbar">
     <a href="../index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
-    <button class="menu-toggle" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="navLinks">☰</button>
-    <div class="nav-links" id="navLinks">
+    <div class="nav-links">
       <a href="../system/index.html">ระบบประมูล</a>
       <a href="../learn/counting.html">นับไพ่</a>
-      <a href="../practice/index.html">ฝึกประมูล</a>
+      <a href="index.html" style="font-weight: bold; color: var(--primary);">ฝึกประมูล</a>
       <a href="../analyzer/hand.html">วิเคราะห์</a>
-      <a href="../login.html" class="btn-login">เข้าสู่ระบบ</a>
+      <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
     </div>
   </nav>
 
-  <main class="container">
-    <h1>ฝึกการประมูล</h1>
-    <div class="card">
-      <p>🚧 หน้านี้กำลังสร้าง เร็วๆ นี้จะมีแบบฝึกหัด Opening, Response, Opener Rebid และ Responder Rebid ครับ</p>
-      <a href="../index.html" class="btn btn-primary">← กลับหน้าแรก</a>
-    </div>
-  </main>
+  <div class="practice-container">
+    
+    <!-- ฝั่งซ้าย: เนื้อหาหลัก (เลือกเมนู หรือ หน้าทำแบบฝึกหัด) -->
+    <main>
+      
+      <!-- 1. หน้าเลือกเมนูหมวดหมู่ฝึกซ้อม -->
+      <div id="menuView" class="menu-card">
+        <h2>🎯 หน้าเลือกเมนูแบบฝึกหัด Shape Before Strength</h2>
+        <p style="color: #666;">เลือกหัวข้อแบบฝึกหัดที่คุณต้องการฝึกซ้อม (ชุดละ 20 ข้อ):</p>
+        
+        <div class="menu-grid">
+          <!-- หมวด Opening -->
+          <div>
+            <button class="menu-btn" onclick="startPractice('opening')">♠ ฝึกเปิด (Opening)</button>
+          </div>
 
+          <!-- หมวด Response (มีเมนูย่อย 1C ถึง 4N) -->
+          <div>
+            <button class="menu-btn" onclick="toggleSubMenu('responseSub')">♥ ฝึก Response ▾</button>
+            <div id="responseSub" class="sub-menu-container">
+              <button class="menu-btn" style="width:100%; margin-top:6px; padding:10px;" onclick="startPractice('response_1c')">Response 1C</button>
+              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1D (เร็วๆนี้)</button>
+              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1H (เร็วๆนี้)</button>
+              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1S (เร็วๆนี้)</button>
+              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1N (เร็วๆนี้)</button>
+            </div>
+          </div>
+
+          <!-- หมวด Opener Rebid (ปิดเทาไว้ก่อน) -->
+          <div>
+            <button class="menu-btn disabled">♦ Opener Rebid (ปิดใช้งาน)</button>
+          </div>
+
+          <!-- หมวด Responder Rebid (ปิดเทาไว้ก่อน) -->
+          <div>
+            <button class="menu-btn disabled">♣ Responder Rebid (ปิดใช้งาน)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. หน้าทำแบบฝึกหัด (Quiz View) -->
+      <div id="quizView" class="quiz-box hidden">
+        <div class="quiz-header">
+          <span id="quizTitle">หมวดหมู่: OPENING</span>
+          <span id="quizProgress">ข้อที่: 1 / 20</span>
+          <span id="quizTimer">⏱ เวลา: 00:00</span>
+          <span id="quizScore">ถูก: 0/0</span>
+          <button class="btn" style="background:#dc2f02; color:#fff; padding:4px 10px; font-size:0.85rem;" onclick="pausePractice()">⏸ พัก (Pause)</button>
+        </div>
+
+        <!-- กล่องแสดงไพ่ในมือ -->
+        <div class="hand-display-box" id="handBox">
+          <button class="view-toggle" onclick="toggleCardView()">🔄 สลับมุมมองไพ่</button>
+          <div style="font-size: 0.95rem; margin-bottom: 10px; opacity: 0.8;" id="questionPrompt">คุณเป็นผู้เปิดประมูลคนแรก (Dealer) จะประมูลอะไร?</div>
+          
+          <!-- แสดงผลไพ่ (ควบคุมด้วย JavaScript) -->
+          <div id="cardRenderArea"></div>
+          
+          <div style="margin-top: 15px; font-size: 0.85rem; color: #d8f3dc;" id="handMeta">แต้ม: 0 HCP | ทรงไพ่: 0000</div>
+        </div>
+
+        <!-- แผงเลือกคำตอบ Bidding Box -->
+        <div class="bidding-box">
+          <div style="color: #d8f3dc; margin-bottom: 8px; font-size: 0.9rem;">เลือกคำตอบการประมูลของคุณ:</div>
+          <div class="bid-levels">
+            <button class="bid-btn" onclick="selectBid('Pass')">Pass</button>
+            <button class="bid-btn" onclick="selectBid('1')">1</button>
+            <button class="bid-btn" onclick="selectBid('2')">2</button>
+            <button class="bid-btn" onclick="selectBid('3')">3</button>
+            <button class="bid-btn" onclick="selectBid('4')">4</button>
+            <button class="bid-btn" onclick="selectBid('5')">5</button>
+            <button class="bid-btn" onclick="selectBid('6')">6</button>
+            <button class="bid-btn" onclick="selectBid('7')">7</button>
+          </div>
+          <div class="bid-suits">
+            <button class="bid-btn suit-c" onclick="selectSuit('♣')">♣</button>
+            <button class="bid-btn suit-d" onclick="selectSuit('♦')">♦</button>
+            <button class="bid-btn suit-h" onclick="selectSuit('♥')">♥</button>
+            <button class="bid-btn suit-s" onclick="selectSuit('♠')">♠</button>
+            <button class="bid-btn" onclick="selectSuit('NT')">NT</button>
+          </div>
+          <div style="margin-top: 12px;">
+            <span id="selectedAnswerDisplay" style="font-size: 1.1rem; font-weight: bold; color: #ffb703; margin-right: 15px;">ยังไม่ได้เลือกคำตอบ</span>
+            <button class="btn btn-primary" onclick="submitAnswer()" id="submitBtn">ยืนยันคำตอบ</button>
+          </div>
+        </div>
+
+        <!-- ส่วนแสดงเฉลยและนับถอยหลัง -->
+        <div id="feedbackArea" class="hidden"></div>
+      </div>
+
+      <!-- 3. หน้าสรุปผลลัพธ์ (Summary View) -->
+      <div id="summaryView" class="quiz-box hidden" style="text-align: center;">
+        <h2>🎉 สรุปผลการฝึกซ้อม</h2>
+        <div id="summaryStats" style="margin: 20px 0; font-size: 1.1rem; line-height: 1.8;"></div>
+        <button class="btn btn-primary" onclick="returnToMenu()">← กลับสู่หน้าเลือกเมนู</button>
+      </div>
+
+    </main>
+
+    <!-- ฝั่งขวา: Cheat Sheet + ตั้งค่าเสียง -->
+    <aside>
+      <div class="cheat-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="margin:0; border:none;">📌 Cheat Sheet</h4>
+          <label style="font-size: 0.8rem; cursor: pointer;">
+            <input type="checkbox" id="soundToggle" checked onchange="toggleSound()"> เปิดเสียงเอฟเฟกต์
+          </label>
+        </div>
+        <div id="cheatSheetContent">
+          <h4>กรุณาเลือกหมวดฝึกซ้อม</h4>
+          <p style="font-size: 0.85rem; color: #666;">คู่มือสรุปกฎจะแสดงที่นี่ตามหมวดที่คุณกำลังฝึก</p>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Overlay หน้าจอตอนกด Pause (ซ่อนหน้าไพ่) -->
+  <div id="pauseOverlay" class="pause-overlay">
+    <h2>⏸ พักการฝึกซ้อมชั่วคราว</h2>
+    <p>หน้าไพ่และเวลาถูกซ่อนไว้เพื่อความยุติธรรม</p>
+    <button class="btn btn-primary" style="margin-top: 20px; font-size: 1.1rem; padding: 10px 25px;" onclick="resumePractice()">▶ ฝึกต่อ (Resume)</button>
+  </div>
+
+  <script>
+    // ตัวแปรควบคุมระบบฝึกซ้อม
+    let currentMode = '';
+    let currentQuestionIndex = 0;
+    let questionsList = [];
+    let scoreCorrect = 0;
+    let totalAnswered = 0;
+    let secondsElapsed = 0;
+    let timerInterval = null;
+    let isPaused = false;
+    let soundEnabled = true;
+    let selectedCardView = 'classic'; // 'classic' หรือ 'badge'
+    let currentSelectedBid = { level: '', suit: '' };
+    let isAnswerSubmitted = false;
+    let countdownInterval = null;
+
+    // เสียงเอฟเฟกต์ (Web Audio API สังเคราะห์เสียงติ๊ง/ปิ๊บ)
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'correct') {
+          osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+          osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+        } else {
+          osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+          osc.frequency.setValueAtTime(150, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+        }
+      } catch(e) {}
+    }
+
+    function toggleSound() {
+      soundEnabled = document.getElementById('soundToggle').checked;
+    }
+
+    function toggleSubMenu(id) {
+      let sub = document.getElementById(id);
+      sub.style.display = sub.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // สร้างโจทย์ตัวอย่าง 20 ข้อตามหมวด
+    function generateQuestions(mode) {
+      let list = [];
+      for (let i = 1; i <= 20; i++) {
+        // จำลองโจทย์ Opening
+        let hcp = Math.floor(Math.random() * 20) + 2;
+        let sCount = Math.floor(Math.random() * 5);
+        let hCount = Math.floor(Math.random() * 5);
+        let dCount = Math.floor(Math.random() * 5);
+        let cCount = 13 - (sCount + hCount + dCount);
+        if(cCount < 0) cCount = 0;
+
+        let shapeStr = `${sCount}${hCount}${dCount}${cCount}`;
+        let correctBid = "Pass";
+        let reasonText = "แต้มไม่ถึงเกณฑ์เปิดประมูล";
+
+        if (hcp >= 14 && hcp <= 16 && Math.max(sCount,hCount,dCount,cCount) <= 4) {
+          correctBid = "1NT";
+          reasonText = "ไพ่สมดุล แต้ม 14-16 HCP";
+        } else if (hCount >= 5 && hcp >= 11) {
+          correctBid = "1♥";
+          reasonText = "มีไพ่ Heart 5+ ใบ และแต้มอยู่ในช่วง 11-20 HCP";
+        } else if (sCount >= 5 && hcp >= 11) {
+          correctBid = "1♠";
+          reasonText = "มีไพ่ Spade 5+ ใบ และแต้มอยู่ในช่วง 11-20 HCP";
+        } else if (hcp >= 21) {
+          correctBid = "2♣";
+          reasonText = "แต้มสูงมาก 21+ HCP";
+        } else if (hcp >= 11) {
+          correctBid = "1♦";
+          reasonText = "เปิดตามโครงสร้างมาตรฐาน Unbalanced";
+        }
+
+        list.push({
+          id: i,
+          hcp: hcp,
+          shape: shapeStr,
+          cards: {
+            s: generateSuitCards(sCount, '♠'),
+            h: generateSuitCards(hCount, '♥'),
+            d: generateSuitCards(dCount, '♦'),
+            c: generateSuitCards(cCount, '♣')
+          },
+          correct: correctBid,
+          reason: reasonText
+        });
+      }
+      return list;
+    }
+
+    function generateSuitCards(count, suitSymbol) {
+      const ranks = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
+      let res = [];
+      for(let i=0; i<count; i++) {
+        let idx = Math.floor(Math.random() * ranks.length);
+        res.push(ranks.splice(idx, 1)[0]);
+      }
+      return res;
+    }
+
+    // เริ่มต้นฝึกซ้อม
+    function startPractice(mode) {
+      currentMode = mode;
+      currentQuestionIndex = 0;
+      scoreCorrect = 0;
+      totalAnswered = 0;
+      secondsElapsed = 0;
+      isPaused = false;
+
+      questionsList = generateQuestions(mode);
+
+      // โหลด Cheat Sheet
+      let csContainer = document.getElementById('cheatSheetContent');
+      if (CheatSheetsData[mode]) {
+        csContainer.innerHTML = CheatSheetsData[mode];
+      } else {
+        csContainer.innerHTML = CheatSheetsData['default'];
+      }
+
+      document.getElementById('menuView').classList.add('hidden');
+      document.getElementById('summaryView').classList.add('hidden');
+      document.getElementById('quizView').classList.remove('hidden');
+
+      startTimer();
+      loadQuestion();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!isPaused && !isAnswerSubmitted) {
+          secondsElapsed++;
+          let min = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+          let sec = (secondsElapsed % 60).toString().padStart(2, '0');
+          document.getElementById('quizTimer').textContent = `⏱ เวลา: ${min}:${sec}`;
+        }
+      }, 1000);
+    }
+
+    function pausePractice() {
+      isPaused = true;
+      document.getElementById('pauseOverlay').style.display = 'flex';
+    }
+
+    function resumePractice() {
+      isPaused = false;
+      document.getElementById('pauseOverlay').style.display = 'none';
+    }
+
+    function loadQuestion() {
+      isAnswerSubmitted = false;
+      currentSelectedBid = { level: '', suit: '' };
+      document.getElementById('selectedAnswerDisplay').textContent = 'ยังไม่ได้เลือกคำตอบ';
+      document.getElementById('feedbackArea').classList.add('hidden');
+      document.getElementById('submitBtn').disabled = false;
+
+      let q = questionsList[currentQuestionIndex];
+      document.getElementById('quizProgress').textContent = `ข้อที่: ${currentQuestionIndex + 1} / 20`;
+      document.getElementById('quizScore').textContent = `ถูก: ${scoreCorrect}/${totalAnswered}`;
+      document.getElementById('handMeta').textContent = `แต้ม: ${q.hcp} HCP | ทรงไพ่: ${q.shape}`;
+
+      renderCards(q.cards);
+    }
+
+    function renderCards(cardsObj) {
+      let area = document.getElementById('cardRenderArea');
+      let suits = [
+        { name: '♠ Spades', symbol: '♠', key: 's', cls: 'suit-s', isRed: false },
+        { name: '♥ Hearts', symbol: '♥', key: 'h', cls: 'suit-h', isRed: true },
+        { name: '♦ Diamonds', symbol: '♦', key: 'd', cls: 'suit-d', isRed: true },
+        { name: '♣ Clubs', symbol: '♣', key: 'c', cls: 'suit-c', isRed: false }
+      ];
+
+      let html = '';
+      suits.forEach(s => {
+        let arr = cardsObj[s.key] || [];
+        if (selectedCardView === 'classic') {
+          // มุมมองไพ่กราฟิกคลาสสิก (หลัก)
+          html += `<div class="classic-card-row">
+                    <div class="classic-suit-icon ${s.cls}">${s.symbol}</div>
+                    <div class="classic-cards">`;
+          if (arr.length === 0) {
+            html += `<span style="color:#adb5bd; font-size:0.9rem; font-style:italic;">Void (-)</span>`;
+          } else {
+            arr.forEach(c => {
+              html += `<div class="playing-card ${s.isRed ? 'red' : ''}"><span>${c}</span><span>${s.symbol}</span></div>`;
+            });
+          }
+          html += `</div></div>`;
+        } else {
+          // มุมมองแบบแบดจ์
+          html += `<div style="margin:8px 0; font-size:1.1rem;">
+                    <span class="${s.cls}">${s.symbol}</span> : <strong>${arr.join(' ') || 'Void (-)'}</strong>
+                   </div>`;
+        }
+      });
+      area.innerHTML = html;
+    }
+
+    function toggleCardView() {
+      selectedCardView = selectedCardView === 'classic' ? 'badge' : 'classic';
+      renderCards(questionsList[currentQuestionIndex].cards);
+    }
+
+    function selectBid(lvl) {
+      if (isAnswerSubmitted) return;
+      currentSelectedBid.level = lvl;
+      if (lvl === 'Pass') currentSelectedBid.suit = '';
+      updateBidDisplay();
+    }
+
+    function selectSuit(suit) {
+      if (isAnswerSubmitted) return;
+      if (currentSelectedBid.level === 'Pass') return;
+      currentSelectedBid.suit = suit;
+      updateBidDisplay();
+    }
+
+    function updateBidDisplay() {
+      let txt = currentSelectedBid.level + currentSelectedBid.suit;
+      document.getElementById('selectedAnswerDisplay').textContent = txt ? `คำตอบของคุณ: ${txt}` : 'ยังไม่ได้เลือกคำตอบ';
+    }
+
+    // ส่งคำตอบ
+    function submitAnswer() {
+      if (isAnswerSubmitted) return;
+      let userAns = currentSelectedBid.level === 'Pass' ? 'Pass' : (currentSelectedBid.level + currentSelectedBid.suit);
+      if (!userAns) {
+        alert('กรุณาเลือกคำตอบก่อนกดยืนยันครับ');
+        return;
+      }
+
+      isAnswerSubmitted = true;
+      document.getElementById('submitBtn').disabled = true;
+      totalAnswered++;
+
+      let q = questionsList[currentQuestionIndex];
+      let isCorrect = (userAns.toUpperCase() === q.correct.toUpperCase());
+      
+      let fbArea = document.getElementById('feedbackArea');
+      fbArea.classList.remove('hidden');
+
+      if (isCorrect) {
+        scoreCorrect++;
+        playSound('correct');
+        fbArea.className = `feedback-alert feedback-correct`;
+        fbArea.innerHTML = `✓ ถูกต้อง! ตอบ: ${userAns}<br><span style="font-size:0.9rem; font-weight:normal;">เหตุผล: ${q.reason}</span>`;
+      } else {
+        playSound('wrong');
+        fbArea.className = `feedback-alert feedback-wrong`;
+        fbArea.innerHTML = `✗ ผิดครับ! คำตอบที่ถูกต้องคือ: ${q.correct} (คุณตอบ: ${userAns})<br><span style="font-size:0.9rem; font-weight:normal;">เหตุผล: ${q.reason}</span>`;
+      }
+
+      document.getElementById('quizScore').textContent = `ถูก: ${scoreCorrect}/${totalAnswered}`;
+
+      // นับถอยหลัง 30 วินาทีไปข้อถัดไปออโต้
+      let countdown = 30;
+      let timerBox = document.createElement('div');
+      timerBox.style.cssText = "margin-top:10px; font-size:0.85rem; color:#666;";
+      timerBox.id = "autoNextTimer";
+      timerBox.textContent = `ระบบจะเปลี่ยนข้ออัตโนมัติใน ${countdown} วินาที...`;
+      fbArea.appendChild(timerBox);
+
+      countdownInterval = setInterval(() => {
+        countdown--;
+        if (document.getElementById('autoNextTimer')) {
+          document.getElementById('autoNextTimer').textContent = `ระบบจะเปลี่ยนข้ออัตโนมัติใน ${countdown} วินาที...`;
+        }
+        if (countdown <= 0) {
+          clearInterval(countdownInterval);
+          nextQuestion();
+        }
+      }, 1000);
+    }
+
+    function nextQuestion() {
+      clearInterval(countdownInterval);
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questionsList.length) {
+        loadQuestion();
+      } else {
+        showSummary();
+      }
+    }
+
+    function showSummary() {
+      clearInterval(timerInterval);
+      document.getElementById('quizView').classList.add('hidden');
+      document.getElementById('summaryView').classList.remove('hidden');
+
+      let min = Math.floor(secondsElapsed / 60);
+      let sec = secondsElapsed % 60;
+      let avgSec = (secondsElapsed / 20).toFixed(1);
+
+      let statsHtml = `
+        ทำถูก: <strong>${scoreCorrect} / 20 ข้อ</strong> (${((scoreCorrect/20)*100).toFixed(0)}%)<br>
+        เวลารวมทั้งหมด: <strong>${min} นาที ${sec} วินาที</strong><br>
+        เวลาเฉลี่ยต่อข้อ: <strong>${avgSec} วินาที/ข้อ</strong>
+      `;
+      document.getElementById('summaryStats').innerHTML = statsHtml;
+
+      // บันทึกสถิติเฉพาะสมาชิกที่ล็อกอิน
+      if (localStorage.getItem('bridge_user_logged') === 'true') {
+        let history = JSON.parse(localStorage.getItem('bridge_practice_history') || '[]');
+        history.push({
+          date: new Date().toLocaleString(),
+          mode: currentMode,
+          score: scoreCorrect,
+          time: `${min}ม ${sec}ว`
+        });
+        localStorage.setItem('bridge_practice_history', JSON.stringify(history));
+      }
+    }
+
+    function returnToMenu() {
+      document.getElementById('summaryView').classList.add('hidden');
+      document.getElementById('menuView').classList.remove('hidden');
+    }
+
+    // ตรวจสอบสถานะล็อกอินขวาบน
+    window.addEventListener('DOMContentLoaded', () => {
+      const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
+      const userName = localStorage.getItem('bridge_user_name');
+      const authNavBtn = document.getElementById('authNavBtn');
+
+      if (isLogged && authNavBtn) {
+        authNavBtn.textContent = `👤 ${userName || 'สมาชิก'}`;
+        authNavBtn.href = '#';
+        authNavBtn.onclick = (e) => {
+          e.preventDefault();
+          if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+            localStorage.removeItem('bridge_user_logged');
+            localStorage.removeItem('bridge_user_name');
+            window.location.href = '../index.html';
+          }
+        };
+      }
+    });
+  </script>
 </body>
 </html>
