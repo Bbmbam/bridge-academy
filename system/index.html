@@ -1,35 +1,291 @@
-   <!DOCTYPE html>
-   <html lang="th">
-   <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-     <meta name="theme-color" content="#1b4332">
-     <title>ระบบ Shape Before Strength - Bridge Classroom</title>
-     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
-     <link rel="stylesheet" href="../css/style.css">
-     <script src="../js/main.js" defer></script>
-   </head>
-   <body>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1b4332">
+  <title>คู่มือระบบประมูล Shape Before Strength - Bridge Classroom</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/dss-engine.js" defer></script>
+  <style>
+    :root {
+      --sidebar-width: 280px;
+    }
+    body {
+      margin: 0;
+      font-family: 'Sarabun', sans-serif;
+      background-color: #f8f9fa;
+      color: var(--text);
+    }
+    /* Layout หลักสำหรับหน้าคู่มือมี Sidebar */
+    .doc-layout {
+      display: flex;
+      min-height: calc(100vh - 70px);
+      margin-top: 60px;
+    }
+    /* Sidebar เมนูด้านข้าง */
+    .doc-sidebar {
+      width: var(--sidebar-width);
+      background: #fff;
+      border-right: 1px solid #e5e7eb;
+      position: fixed;
+      top: 60px;
+      bottom: 0;
+      left: 0;
+      overflow-y: auto;
+      padding: 20px 16px;
+      transition: transform 0.3s ease;
+      z-index: 100;
+    }
+    .doc-sidebar h3 {
+      font-size: 0.95rem;
+      color: var(--primary);
+      margin-top: 15px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .doc-sidebar ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0 0 15px 0;
+    }
+    .doc-sidebar li {
+      margin-bottom: 6px;
+    }
+    .doc-sidebar a {
+      display: block;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 6px 10px;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .doc-sidebar a:hover {
+      background: var(--accent-light);
+      color: var(--primary);
+    }
+    .doc-sidebar .sub-menu {
+      padding-left: 15px;
+      margin-top: 4px;
+      border-left: 2px solid #e5e7eb;
+    }
+    
+    /* ส่วนเนื้อหาหลัก */
+    .doc-content {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      padding: 30px;
+      max-width: 900px;
+    }
+    .rule-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border-left: 5px solid var(--primary);
+      scroll-margin-top: 80px;
+    }
+    .rule-card h2 {
+      color: var(--primary);
+      margin-top: 0;
+      font-size: 1.35rem;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .rule-card h3 {
+      color: var(--secondary);
+      font-size: 1.1rem;
+      margin-top: 16px;
+    }
+    p, li {
+      line-height: 1.6;
+      font-size: 0.98rem;
+    }
+    /* ปุ่มเปิด-ปิดเมนูบนมือถือ */
+    .mobile-menu-toggle {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      z-index: 1000;
+      cursor: pointer;
+    }
 
-     <nav class="navbar">
-       <a href="../index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
-       <button class="menu-toggle" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="navLinks">☰</button>
-       <div class="nav-links" id="navLinks">
-         <a href="../system/index.html">ระบบประมูล</a>
-         <a href="../learn/counting.html">นับไพ่</a>
-         <a href="../practice/index.html">ฝึกประมูล</a>
-         <a href="../analyzer/hand.html">วิเคราะห์</a>
-         <a href="../login.html" class="btn-login">เข้าสู่ระบบ</a>
-       </div>
-     </nav>
+    /* Responsive สำหรับมือถือ */
+    @media (max-width: 900px) {
+      .doc-sidebar {
+        transform: translateX(-100%);
+      }
+      .doc-sidebar.active {
+        transform: translateX(0);
+        box-shadow: 5px 0 25px rgba(0,0,0,0.2);
+      }
+      .doc-content {
+        margin-left: 0;
+        padding: 16px;
+      }
+      .mobile-menu-toggle {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
 
-     <main class="container">
-       <h1>ระบบประมูล Shape Before Strength</h1>
-       <div class="card">
-         <p>🚧 หน้าระบบหลักกำลังพัฒนา เตรียมพบกับรายละเอียดแผนผังการประมูล (Openings, Responses, Rebids และ Core Engine 16+) ที่แบ่งสัดส่วนให้แก้ไขง่ายในรูปแบบโครงสร้างข้อมูลครับ</p>
-         <a href="../index.html" class="btn btn-primary">← กลับหน้าแรก</a>
-       </div>
-     </main>
+  <nav class="navbar">
+    <a href="../index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
+    <div class="nav-links">
+      <a href="index.html" style="font-weight: bold; color: var(--primary);">ระบบประมูล</a>
+      <a href="../learn/counting.html">نับไพ่</a>
+      <a href="../practice/index.html">ฝึกประมูล</a>
+      <a href="../analyzer/hand.html">วิเคราะห์</a>
+      <a href="../login.html" class="btn-login">บัญชีผู้ใช้</a>
+    </div>
+  </nav>
 
-   </body>
-   </html>
+  <div class="doc-layout">
+    <!-- Sidebar เมนูด้านข้าง -->
+    <aside class="doc-sidebar" id="docSidebar">
+      <h3>1. Fundamental Rules</h3>
+      <ul>
+        <li><a href="#rule1">Rule 1: Transfer First</a></li>
+        <li><a href="#rule2">Rule 2: Shape Before Strength</a></li>
+        <li><a href="#rule3">Rule 3: Strong Hands Speak</a></li>
+        <li><a href="#rule4">Rule 4: Ask Before Guessing</a></li>
+        <li><a href="#rule5">Rule 5: Find Fit Before Game</a></li>
+      </ul>
+
+      <h3>2. Opening Structure</h3>
+      <ul>
+        <li><a href="#opening">ตารางการเปิดไพ่มาตรฐาน</a></li>
+      </ul>
+
+      <h3>3. Responding to ♣ Opening</h3>
+      <ul>
+        <li><a href="#resp-major">A. Transfer Response to Majors</a></li>
+        <li><a href="#resp-neg">B. Response Negative ♠</a></li>
+        <li><a href="#resp-1n">C. Response 1N Game Force Relay</a></li>
+        <li><a href="#resp-lvl2">D. Response Level 2</a></li>
+      </ul>
+
+      <h3>4. Core Engine</h3>
+      <ul>
+        <li><a href="#core-trans">1. Transfer Response</a></li>
+        <li><a href="#core-check">2. Transfer Checkback</a></li>
+        <li><a href="#core-fit">3. Strong Fit Support</a></li>
+        <li><a href="#core-nofit">4. Strong No-Fit</a></li>
+        <li><a href="#core-gfr">5. Game Force Relay</a></li>
+        <li><a href="#core-shape">6. Shape Relay Structure</a></li>
+        <li><a href="#core-slam">7. Slam Convention</a></li>
+      </ul>
+    </aside>
+
+    <!-- เนื้อหาคู่มือหลัก -->
+    <main class="doc-content">
+      
+      <!-- Rule 1-5 -->
+      <section id="rule1" class="rule-card">
+        <h2>1. Fundamental Rules of the System</h2>
+        
+        <h3>Rule 1: Transfer First</h3>
+        <p>เมื่อมีโอกาสใช้ Transfer ให้ใช้ Transfer ก่อน</p>
+        <p><strong>เหตุผล:</strong> หา Major Fit ได้เร็ว / เก็บพื้นที่ประมูล / ซ่อนมือคนเปิด</p>
+
+        <h3 id="rule2">Rule 2: Shape Before Strength</h3>
+        <p>ก่อนถามแต้มให้หารูปไพ่ก่อน</p>
+        <p><strong>ลำดับข้อมูล:</strong> Fit → Shape → Shortness → Control → Strength</p>
+        <p><em>ดังนั้น Game Force Relay ไม่ใช่ถามแต้ม แต่ถาม Shape</em></p>
+
+        <h3 id="rule3">Rule 3: Strong Hands Speak</h3>
+        <p>มือขั้นต่ำประมูลธรรมชาติ มือที่มี 16+ HCP จะมี Core Engine ในการแสดงพลัง</p>
+
+        <h3 id="rule4">Rule 4: Ask Before Guessing</h3>
+        <p>ห้ามเดา ถ้ายังมีพื้นที่ประมูลให้ถามก่อน จึงเกิด Shape Relay, Transfer Checkback, Shape Stayman</p>
+
+        <h3 id="rule5">Rule 5: Find Fit Before Game</h3>
+        <p>เกมจะตัดสินหลังรู้ Fit แล้ว ไม่ใช่หลังนับแต้ม</p>
+        <p><strong>ตัวอย่าง:</strong> 15 + 10 = 25 ไม่จำเป็นต้องได้เกมเสมอ และ 14 + 9 = 23 บางครั้งก็ได้เกมถ้า Shape ดี</p>
+      </section>
+
+      <!-- Opening Structure -->
+      <section id="opening" class="rule-card">
+        <h2>2. Opening Structure</h2>
+        <p>สรุปเกณฑ์การเปิดประมูล (Opening Bids) ตามระบบ Shape Before Strength:</p>
+        <ul>
+          <li><strong>Pass:</strong> ปกติ 0-10 HCP</li>
+          <li><strong>1♣:</strong> 11-20 HCP (ถ้า Balanced ไม่การันตีชุดยาวกว่า ยกเว้น 5332, 4432)</li>
+          <li><strong>1♦:</strong> 11-20 HCP, Unbalanced, ♦ 4+</li>
+          <li><strong>1♥ / 1♠:</strong> 11-20 HCP, Major 5+ (ไม่มี 5332 ยกเว้นมี 17+ HCP)</li>
+          <li><strong>1NT:</strong> 14-16 HCP, Balanced (รองรับ 6m, 5M, Singleton OK)</li>
+          <li><strong>2♣:</strong> 21+ HCP หรือ 8.5+ Playing Tricks</li>
+        </ul>
+      </section>
+
+      <!-- Responding to Club -->
+      <section id="resp-major" class="rule-card">
+        <h2>3. Responding to ♣ Opening</h2>
+        
+        <h3 id="resp-major">A. Transfer Response to Majors</h3>
+        <p>1♣ - 1♦ (Transfer ♥) และ 1♣ - 1♥ (Transfer ♠) คนเปิดประเมิน 2 ข้อคือ มี Support หรือไม่? และมี Extra Values หรือไม่?</p>
+
+        <h3 id="resp-neg">B. Response Negative ♠</h3>
+        <p>แต้ม 6-10 ไม่มี Major 4 ใบ และไม่มี minor 6+ เพื่อตรวจสอบรูปมือขั้นต่ำ</p>
+
+        <h3 id="resp-1n">C. Response 1N Game Force Relay</h3>
+        <p>ไพ่แต้มเกมต้องการรู้ Shape ของคนเปิดทันทีโดยยังไม่สนแต้ม ผ่านโครงสร้าง Step และ Transfer ชุด</p>
+
+        <h3 id="resp-lvl2">D. Response Level 2</h3>
+        <p>การตอบระดับ 2 เมื่อมีแต้มชวนเกมและไม่มี Major 4 ใบ เช่น 2♣ (Transfer ♦) หรือ 2♦ (GI ♣5+)</p>
+      </section>
+
+      <!-- Core Engine -->
+      <section id="core-trans" class="rule-card">
+        <h2>4. Core Engine</h2>
+
+        <h3 id="core-trans">1. Transfer Response</h3>
+        <p>ใช้หา Major Fit หลังเปิด 1♣ โดยใช้ Transfer เป็นภาษาหลักของระบบ</p>
+
+        <h3 id="core-check">2. Transfer Checkback</h3>
+        <p>ใช้หลังคนเปิด accept transfer หรือ rebid 1♠ เพื่อแยก NF, GI และ GF โดยไม่เสียพื้นที่</p>
+
+        <h3 id="core-fit">3. Strong Fit Support</h3>
+        <p>แบ่งเป็น Strong Fit 3 (3-card support 16+), Strong Fit 4 (4-card support 16+) และ NT Fit 4 (17-19 Bal)</p>
+
+        <h3 id="core-nofit">4. Strong No-Fit (Gazilli)</h3>
+        <p>เครื่องมือสำหรับมือแข็งที่ยังไม่พบ Major Fit ช่วยซ่อนรูปมือ แยก Minimum/Extra และเข้า Shape Relay รวดเร็ว</p>
+
+        <h3 id="core-gfr">5. Game Force Relay</h3>
+        <p>ใช้เมื่อเปิด minor แล้วต้องการรู้ Shape ของคนเปิดก่อนผ่าน 1♣-1N หรือ 1M-2♣</p>
+
+        <h3 id="core-shape">6. Shape Relay Structure</h3>
+        <p>โครงสร้างระบุรูปทรง 54 หรือ 6+ ผ่าน Step 1-5 เพื่อหาความสั้น (Shortness) และควบคุมการบิด</p>
+
+        <h3 id="core-slam">7. Slam Convention</h3>
+        <p>ระบบถามคีย์การ์ด Roman Key Cards (RKC) และ Recycle with Void เพื่อตามหา Key cards และ Useful Void อย่างแม่นยำ</p>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ปุ่มเปิด-ปิดเมนูสำหรับมือถือ -->
+  <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰ เมนูกฎระเบียบ</button>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('docSidebar');
+      sidebar.classList.toggle('active');
+    }
+  </script>
+</body>
+</html>
