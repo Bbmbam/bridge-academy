@@ -2,7 +2,8 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1b4332">
   <title>Bridge Bidding Classroom - ห้องเรียนประมูลไพ่บริดจ์</title>
   <meta name="description" content="ฝึกประมูลไพ่บริดจ์ด้วยระบบ Shape Before Strength พร้อมแบบฝึกหัดและเครื่องมือวิเคราะห์มือไพ่">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♠</text></svg>">
@@ -10,13 +11,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
 </head>
 <body>
 
   <nav class="navbar">
     <a href="index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
-    <div class="nav-links">
+    <button class="menu-toggle" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="navLinks">☰</button>
+    <div class="nav-links" id="navLinks">
       <a href="system/index.html">ระบบประมูล</a>
+      <a href="learn/counting.html">นับไพ่</a>
       <a href="practice/index.html">ฝึกประมูล</a>
       <a href="analyzer/hand.html">วิเคราะห์</a>
       <a href="login.html" class="btn-login">เข้าสู่ระบบ</a>
@@ -35,7 +39,6 @@
 
   <main class="container">
 
-    <!-- แสดงเมื่อเคยฝึกค้างไว้ (เก็บใน localStorage) -->
     <section id="continue" class="continue" hidden>
       <span id="continueText"></span>
       <a id="continueLink" href="#" class="btn btn-primary">ฝึกต่อ →</a>
@@ -131,19 +134,9 @@
   </main>
 
   <footer>
-    <p>ระบบ Shape Before Strength v0.x · <a href="https://github.com/YOUR-NAME/bridge-academy">ดูโค้ดบน GitHub</a> · <a href="privacy.html">นโยบายความเป็นส่วนตัว</a></p>
+    <p>ระบบ Shape Before Strength v0.x · <a href="https://github.com/Bbmbam/bridge-academy">ดูโค้ดบน GitHub</a> · <a href="privacy.html">นโยบายความเป็นส่วนตัว</a></p>
     <p>&copy; 2026 Bridge Bidding Classroom</p>
   </footer>
 
-  <script>
-    // แสดงปุ่ม "ฝึกต่อ" ถ้าผู้ใช้เคยฝึกค้างไว้ (ใช้ได้แม้ไม่ล็อกอิน)
-    const last = JSON.parse(localStorage.getItem('lastPractice') || 'null');
-    if (last) {
-      document.getElementById('continue').hidden = false;
-      document.getElementById('continueText').textContent =
-        `คุณฝึกค้างไว้: ${last.topic} (${last.done}/${last.total} ข้อ)`;
-      document.getElementById('continueLink').href = last.url;
-    }
-  </script>
 </body>
 </html>
