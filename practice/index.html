@@ -25,6 +25,14 @@
       opacity: 1;
       color: var(--accent) !important;
     }
+    /* กรอบไฮไลต์เมนูปัจจุบัน (แบบหน้านับไพ่) */
+    .navbar .nav-links a[aria-current="page"],
+    .navbar .nav-links a.active {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
 
     .practice-container { max-width: 1200px; margin: 30px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
     @media(max-width: 900px) { .practice-container { grid-template-columns: 1fr; } }
@@ -89,7 +97,7 @@
     <div class="nav-links" id="navLinks">
       <a href="../system/index.html">ระบบประมูล</a>
       <a href="../learn/counting.html">นับไพ่</a>
-      <a href="index.html" style="font-weight: bold; color: var(--accent);">ฝึกประมูล</a>
+      <a href="index.html" aria-current="page">ฝึกประมูล</a>
       <a href="../analyzer/hand.html">วิเคราะห์</a>
       <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
     </div>
