@@ -16,22 +16,27 @@
     }
     body { font-family: 'Sarabun', sans-serif; background: #f4f7f5; margin: 0; color: #333; }
     
-    /* Navbar styling ให้ลิงก์ขวาบนสว่างชัดเจน */
     .navbar .nav-links a {
       color: #ffffff !important;
       opacity: 0.9;
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      transition: background 0.2s;
     }
     .navbar .nav-links a:hover {
       opacity: 1;
-      color: var(--accent) !important;
+      background: rgba(255, 255, 255, 0.1);
     }
-    /* กรอบไฮไลต์เมนูปัจจุบัน (แบบหน้านับไพ่) */
+    
     .navbar .nav-links a[aria-current="page"],
     .navbar .nav-links a.active {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: #ffffff !important;
       padding: 6px 12px;
       border-radius: 6px;
       font-weight: bold;
+      opacity: 1;
     }
 
     .practice-container { max-width: 1200px; margin: 30px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
@@ -48,7 +53,6 @@
     .quiz-box { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     .quiz-header { display: flex; justify-content: space-between; align-items: center; background: #e9ecef; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-weight: bold; font-size: 0.9rem; flex-wrap: wrap; gap: 8px; }
     
-    /* กล่องแสดงไพ่สไตล์ BBO ซ้อนเหลื่อมกัน */
     .hand-display-box { background: var(--card-bg); border-radius: 12px; padding: 20px; color: #fff; margin-bottom: 20px; position: relative; min-height: 180px; }
     .classic-card-row { display: flex; align-items: center; margin: 12px 0; font-size: 1.1rem; }
     .classic-suit-icon { width: 30px; font-size: 1.3rem; text-align: center; font-weight: bold; }
@@ -97,7 +101,7 @@
     <div class="nav-links" id="navLinks">
       <a href="../system/index.html">ระบบประมูล</a>
       <a href="../learn/counting.html">นับไพ่</a>
-      <a href="index.html" aria-current="page">ฝึกประมูล</a>
+      <a href="index.html" aria-current="page" class="active">ฝึกประมูล</a>
       <a href="../analyzer/hand.html">วิเคราะห์</a>
       <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
     </div>
@@ -398,7 +402,6 @@
       document.getElementById('suitSelectionArea').classList.add('hidden');
       document.getElementById('biddingInstruction').textContent = 'เลือกเลเวลการประมูลของคุณ:';
 
-      // รีเซ็ตล้างสถานะปุ่มเลือกทั้งหมด ไม่ให้ค้างจากข้อเก่า
       document.querySelectorAll('.bid-levels .bid-btn, .bid-suits .bid-btn').forEach(b => {
         b.classList.remove('selected');
       });
@@ -488,6 +491,15 @@
       document.getElementById('selectedAnswerDisplay').textContent = txt ? `คำตอบของคุณ: ${txt}` : 'ยังไม่ได้เลือกคำตอบ';
     }
 
+    // ฟังก์ชันช่วยทำความสะอาดข้อความสตริงคำตอบให้ตรงกันเสมอ (Normalize)
+    function normalizeAnswer(str) {
+      return (str || "").toString().trim().toUpperCase()
+        .replace(/♣/g, 'C')
+        .replace(/♦/g, 'D')
+        .replace(/♥/g, 'H')
+        .replace(/♠/g, 'S');
+    }
+
     function submitAnswer() {
       if (isAnswerSubmitted) return;
       let userAns = currentSelectedBid.level === 'Pass' ? 'Pass' : (currentSelectedBid.level + currentSelectedBid.suit);
@@ -501,7 +513,9 @@
       totalAnswered++;
 
       let q = questionsList[currentQuestionIndex];
-      let isCorrect = (userAns.toUpperCase() === q.correct.toUpperCase());
+      
+      // เปรียบเทียบคำตอบแบบ Normalize แล้ว (หมดปัญหาเรื่องสัญลักษณ์อักขระพิเศษ)
+      let isCorrect = (normalizeAnswer(userAns) === normalizeAnswer(q.correct));
       
       let fbArea = document.getElementById('feedbackArea');
       fbArea.classList.remove('hidden');
