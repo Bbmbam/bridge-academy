@@ -19,7 +19,7 @@ const SPECIAL_D4C5 = new Set([
 ]);
 
 // ==========================================
-// HELPERS
+// HELPERS & 52-CARD DECK GENERATOR
 // ==========================================
 
 function shapeLengths(shape) {
@@ -36,6 +36,48 @@ function hasShort(shape) {
     return s <= 1 || h <= 1 || d <= 1 || c <= 1;
 }
 
+// สุ่มสำรับไพ่มาตรฐาน 52 ใบจริง แล้วแจก 13 ใบ ไม่ซ้ำกัน
+function generateRandomHand() {
+    const suits = ['s', 'h', 'd', 'c'];
+    const ranks = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
+    const cardValues = {'A': 4, 'K': 3, 'Q': 2, 'J': 1};
+    const rankOrder = {'A':14, 'K':13, 'Q':12, 'J':11, '10':10, '9':9, '8':8, '7':7, '6':6, '5':5, '4':4, '3':3, '2':2};
+
+    let deck = [];
+    suits.forEach(suit => {
+        ranks.forEach(rank => {
+            deck.push({ suit: suit, rank: rank });
+        });
+    });
+
+    // Fisher-Yates Shuffle (สุ่มสลับสำรับ 52 ใบ)
+    for (let i = deck.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+
+    // หยิบมา 13 ใบแรกเป็นมือผู้เล่น
+    let hand = deck.slice(0, 13);
+
+    let cardsObj = { s: [], h: [], d: [], c: [] };
+    let counts = { s: 0, h: 0, d: 0, c: 0 };
+    let hcp = 0;
+
+    hand.forEach(card => {
+        cardsObj[card.suit].push(card.rank);
+        counts[card.suit]++;
+        if (cardValues[card.rank]) hcp += cardValues[card.rank];
+    });
+
+    // เรียงลำดับแต้มไพ่แต่ละชุดจากมากไปน้อย
+    Object.keys(cardsObj).forEach(suit => {
+        cardsObj[suit].sort((a, b) => rankOrder[b] - rankOrder[a]);
+    });
+
+    let shapeStr = `${counts.s}${counts.h}${counts.d}${counts.c}`;
+    return { hcp, shape: shapeStr, cards: cardsObj };
+}
+
 // ==========================================
 // CENTRALIZED DECISION ENGINE
 // ==========================================
@@ -43,7 +85,7 @@ function hasShort(shape) {
 function evaluateCentralDecision(openerHcp, openerShape, responseRangeDict, currentBidStr) {
     let [s, h, d, c] = shapeLengths(openerShape);
     let balanced = isBalanced(openerShape);
-    let responseStr = (currentBidStr || "").toUpperCase().trim();
+    let responseStr = (currentBidStr || "").toUpperCase().trim().replace(/NT/g, 'N');
 
     let minResp = responseRangeDict.min !== undefined ? responseRangeDict.min : (responseRangeDict.p_min !== undefined ? responseRangeDict.p_min : 6);
     let maxResp = responseRangeDict.max !== undefined ? responseRangeDict.max : (responseRangeDict.p_max !== undefined ? responseRangeDict.p_max : 10);
@@ -237,5 +279,8 @@ const DSSEngine = {
     },
     evaluateCentralDecision(hcp, shape, responseDict, currentBid) {
         return evaluateCentralDecision(hcp, shape, responseDict, currentBid);
+    },
+    generateRandomHand() {
+        return generateRandomHand();
     }
 };
