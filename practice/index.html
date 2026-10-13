@@ -7,6 +7,10 @@
   <title>ฝึกประมูล Shape Before Strength - Bridge Classroom</title>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
+  
+  <!-- โหลด Supabase JS Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <script src="../js/dss-engine.js" defer></script>
   <script src="cheatsheets.js" defer></script>
   <style>
@@ -38,6 +42,28 @@
       font-weight: bold;
       opacity: 1;
     }
+
+    .user-menu-container { position: relative; display: inline-block; }
+    .user-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #fff;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      z-index: 1000;
+      overflow: hidden;
+    }
+    .user-dropdown-content a {
+      color: #333 !important;
+      padding: 10px 14px;
+      text-decoration: none;
+      display: block;
+      font-size: 0.9rem;
+    }
+    .user-dropdown-content a:hover { background-color: #f1f1f1 !important; color: var(--primary) !important; }
+    .user-menu-container.active .user-dropdown-content { display: block; }
 
     .practice-container { max-width: 1200px; margin: 30px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
     @media(max-width: 900px) { .practice-container { grid-template-columns: 1fr; } }
@@ -89,7 +115,6 @@
 
     .pause-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #fff; display: none; text-align: center; padding: 20px; }
     
-    /* สไตล์ตารางสถิติและลีดเดอร์บอร์ด */
     .stats-table, .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95rem; text-align: left; }
     .stats-table th, .stats-table td, .leaderboard-table th, .leaderboard-table td { padding: 10px; border-bottom: 1px solid #eee; }
     .stats-table th, .leaderboard-table th { background: #f8f9fa; color: var(--primary); }
@@ -108,13 +133,19 @@
       <a href="../learn/counting.html">นับไพ่</a>
       <a href="index.html" aria-current="page" class="active">ฝึกประมูล</a>
       <a href="../analyzer/hand.html">วิเคราะห์</a>
-      <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
+      
+      <div id="authNavContainer" class="user-menu-container">
+        <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
+        <div class="user-dropdown-content" id="userDropdown">
+          <a href="#" onclick="showMyStatsModal(); return false;">📊 สถิติตัวเอง</a>
+          <a href="#" onclick="logoutUser(); return false;">🚪 ออกจากระบบ</a>
+        </div>
+      </div>
     </div>
   </nav>
 
   <div class="practice-container">
     
-    <!-- ฝั่งซ้าย: เนื้อหาหลัก -->
     <main>
       
       <!-- 1. หน้าเลือกเมนูหมวดหมู่ฝึกซ้อม -->
@@ -144,14 +175,14 @@
           </div>
         </div>
 
-        <!-- ส่วนแสดงสถิติและลีดเดอร์บอร์ดหน้าแรกเฉพาะสมาชิก -->
+        <!-- ลีดเดอร์บอร์ดดึงจาก Supabase -->
         <div id="memberDashboard" class="hidden" style="margin-top: 35px; border-top: 2px dashed #eee; padding-top: 20px;">
           <h3>🏆 ลีดเดอร์บอร์ดผู้ฝึกซ้อม (Leaderboard)</h3>
           <div style="display: flex; gap: 8px; margin-bottom: 12px;">
             <button class="btn" style="background:var(--primary); color:#fff; padding:6px 12px; font-size:0.85rem;" onclick="switchLeaderboard('opening')">Opening</button>
             <button class="btn" style="background:#e9ecef; color:#333; padding:6px 12px; font-size:0.85rem;" onclick="switchLeaderboard('response_1c')">Response 1C</button>
           </div>
-          <div id="leaderboardContent"></div>
+          <div id="leaderboardContent">กำลังโหลดข้อมูล...</div>
         </div>
       </div>
 
@@ -165,7 +196,6 @@
           <button class="btn" style="background:#dc2f02; color:#fff; padding:6px 12px; font-size:0.9rem;" onclick="pausePractice()" type="button">⏸ พัก (Pause)</button>
         </div>
 
-        <!-- กล่องแสดงไพ่ในมือ -->
         <div class="hand-display-box" id="handBox">
           <div class="hand-controls">
             <button class="action-badge-btn" onclick="toggleCardView()" id="viewToggleBtn" type="button">🔄 มุมมองแบดจ์</button>
@@ -178,7 +208,6 @@
           <div style="margin-top: 15px; font-size: 0.85rem; color: #d8f3dc;" id="handMeta">แต้ม: 0 HCP | ทรงไพ่: 0000</div>
         </div>
 
-        <!-- แผงเลือกคำตอบ Bidding Box -->
         <div class="bidding-box">
           <div style="color: #d8f3dc; margin-bottom: 8px; font-size: 0.9rem;" id="biddingInstruction">เลือกเลเวลการประมูลของคุณ:</div>
           <div class="bid-levels">
@@ -191,7 +220,7 @@
             <button class="bid-btn" onclick="selectBid('6', this)" type="button">6</button>
             <button class="bid-btn" onclick="selectBid('7', this)" type="button">7</button>
           </div>
-          <!-- แผงเลือกดอกไพ่ ซ่อนไว้จนกว่าจะเลือกเลเวล -->
+          
           <div class="bid-suits hidden" id="suitSelectionArea" style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 10px;">
             <button class="bid-btn suit-c" onclick="selectSuit('♣', this)" type="button">♣</button>
             <button class="bid-btn suit-d" onclick="selectSuit('♦', this)" type="button">♦</button>
@@ -205,11 +234,10 @@
           </div>
         </div>
 
-        <!-- ส่วนแสดงเฉลย -->
         <div id="feedbackArea" class="hidden"></div>
       </div>
 
-      <!-- 3. หน้าสรุปผลลัพธ์ (พร้อมปุ่มครบครันตามรีเควส) -->
+      <!-- 3. หน้าสรุปผลลัพธ์ -->
       <div id="summaryView" class="quiz-box hidden" style="text-align: center;">
         <h2>🎉 สรุปผลการฝึกซ้อม</h2>
         <div id="summaryStats" style="margin: 20px 0; font-size: 1.1rem; line-height: 1.8;"></div>
@@ -220,13 +248,12 @@
           <button class="btn member-only-btn hidden" style="background:#4361ee; color:#fff;" onclick="showMyStats()" type="button">📊 สถิติตัวเอง</button>
         </div>
 
-        <!-- พื้นที่แสดงประวัติส่วนตัวย้อนหลัง (สำหรับสมาชิก) -->
         <div id="myStatsContainer" class="hidden" style="margin-top: 25px; text-align: left; border-top: 1px solid #eee; padding-top: 15px;"></div>
       </div>
 
     </main>
 
-    <!-- ฝั่งขวา: Cheat Sheet (พับเก็บได้ และซ่อนในหน้าเลือกเมนู) -->
+    <!-- ฝั่งขวา: Cheat Sheet -->
     <aside id="cheatSheetSide" class="hidden">
       <div class="cheat-card">
         <h4>
@@ -252,6 +279,11 @@
   </div>
 
   <script>
+    // ตั้งค่าเชื่อมต่อ Supabase (เปลี่ยน URL และ Key ให้ตรงกับโปรเจกต์ของคุณ)
+    const SUPABASE_URL = 'sb_publishable_bzBvrhttps://oedgolwpnxuhsuulohyy.supabase.comkMZIvV5XRU1v_jDg__lRpzlXA';
+    const SUPABASE_ANON_KEY = 'sb_publishable_bzBvrmkMZIvV5XRU1v_jDg__lRpzlXA';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     let currentMode = '';
     let currentQuestionIndex = 0;
     let questionsList = [];
@@ -590,7 +622,8 @@
       }
     }
 
-    function showSummary() {
+    // บันทึกผลลง Supabase เมื่อทำครบชุด
+    async function showSummary() {
       clearInterval(timerInterval);
       document.getElementById('quizView').classList.add('hidden');
       document.getElementById('cheatSheetSide').classList.add('hidden');
@@ -607,52 +640,74 @@
       `;
       document.getElementById('summaryStats').innerHTML = statsHtml;
 
-      // บันทึกสถิติลง localStorage สำหรับสมาชิก
       const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
       if (isLogged) {
         const userName = localStorage.getItem('bridge_user_name') || 'สมาชิก';
-        let history = JSON.parse(localStorage.getItem('bridge_practice_history') || '[]');
-        let record = {
-          user: userName,
-          date: new Date().toLocaleDateString(),
-          mode: currentMode,
-          score: scoreCorrect,
-          timeSec: secondsElapsed,
-          timeStr: `${min}ม ${sec}ว`,
-          avg: avgSec
-        };
-        history.push(record);
-        localStorage.setItem('bridge_practice_history', JSON.stringify(history));
-
-        // อัปเดต Leaderboard กล่อมจำลอง
-        let leaderboard = JSON.parse(localStorage.getItem('bridge_leaderboard') || '[]');
-        leaderboard.push(record);
-        localStorage.setItem('bridge_leaderboard', JSON.stringify(leaderboard));
+        try {
+          const { error } = await _supabase.from('practice_history').insert([{
+            username: userName,
+            mode: currentMode,
+            score: scoreCorrect,
+            time_sec: secondsElapsed,
+            time_str: `${min}ม ${sec}ว`,
+            avg_time: `${avgSec}s`
+          }]);
+          if (error) console.error("Error saving stats:", error);
+        } catch (err) {
+          console.error("Supabase error:", err);
+        }
 
         document.querySelectorAll('.member-only-btn').forEach(b => b.classList.remove('hidden'));
       }
     }
 
-    function showMyStats() {
-      let history = JSON.parse(localStorage.getItem('bridge_practice_history') || '[]');
+    // ดึงสถิติส่วนตัวจาก Supabase
+    async function showMyStats() {
       let container = document.getElementById('myStatsContainer');
       container.classList.toggle('hidden');
-
       if (container.classList.contains('hidden')) return;
 
-      if (history.length === 0) {
-        container.innerHTML = `<p style="color:#666; font-size:0.9rem;">ยังไม่มีประวัติการฝึกซ้อม</p>`;
-        return;
-      }
+      const userName = localStorage.getItem('bridge_user_name');
+      container.innerHTML = `<p style="color:#666; font-size:0.9rem;">กำลังโหลดข้อมูล...</p>`;
 
-      let html = `<h4>📊 ประวัติการฝึกซ้อมส่วนตัว</h4>
-                  <table class="stats-table">
-                    <tr><th>วันที่</th><th>หมวด</th><th>คะแนน</th><th>เวลา</th><th>เฉลี่ย/ข้อ</th></tr>`;
-      history.slice(-5).reverse().forEach(h => {
-        html += `<tr><td>${h.date}</td><td>${h.mode}</td><td>${h.score}/20</td><td>${h.timeStr}</td><td>${h.avg}s</td></tr>`;
-      });
-      html += `</table>`;
-      container.innerHTML = html;
+      try {
+        let { data, error } = await _supabase
+          .from('practice_history')
+          .select('*')
+          .eq('username', userName)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (error || !data || data.length === 0) {
+          container.innerHTML = `<p style="color:#666; font-size:0.9rem;">ยังไม่มีประวัติการฝึกซ้อม</p>`;
+          return;
+        }
+
+        let html = `<h4>📊 ประวัติการฝึกซ้อมส่วนตัว (ซิงค์จากเซิร์ฟเวอร์)</h4>
+                    <table class="stats-table">
+                      <tr><th>วันที่</th><th>หมวด</th><th>คะแนน</th><th>เวลา</th><th>เฉลี่ย/ข้อ</th></tr>`;
+        data.forEach(h => {
+          let dateStr = new Date(h.created_at).toLocaleDateString();
+          html += `<tr><td>${dateStr}</td><td>${h.mode}</td><td>${h.score}/20</td><td>${h.time_str}</td><td>${h.avg_time}</td></tr>`;
+        });
+        html += `</table>`;
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = `<p style="color:red; font-size:0.9rem;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+      }
+    }
+
+    function showMyStatsModal() {
+      showMyStats();
+      document.getElementById('myStatsContainer').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function logoutUser() {
+      if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+        localStorage.removeItem('bridge_user_logged');
+        localStorage.removeItem('bridge_user_name');
+        window.location.reload();
+      }
     }
 
     function returnToMenu() {
@@ -667,48 +722,64 @@
       loadLeaderboard(mode);
     }
 
-    function loadLeaderboard(mode) {
-      let leaderboard = JSON.parse(localStorage.getItem('bridge_leaderboard') || '[]');
-      // กรองตามหมวด และเรียงลำดับคะแนนมากไปน้อย ถ้าเท่ากันเอาเวลาน้อยไปมาก
-      let filtered = leaderboard.filter(item => item.mode === mode);
-      filtered.sort((a, b) => b.score - a.score || a.timeSec - b.timeSec);
-
+    // ดึงลีดเดอร์บอร์ดเรียลไทม์จาก Supabase
+    async function loadLeaderboard(mode) {
       let container = document.getElementById('leaderboardContent');
-      if (filtered.length === 0) {
-        container.innerHTML = `<p style="font-size:0.9rem; color:#666;">ยังไม่มีข้อมูลการฝึกในหมวดนี้</p>`;
-        return;
-      }
+      container.innerHTML = `<p style="font-size:0.9rem; color:#666;">กำลังโหลดลีดเดอร์บอร์ด...</p>`;
 
-      let html = `<table class="leaderboard-table">
-                    <tr><th>อันดับ</th><th>ผู้ใช้</th><th>คะแนน</th><th>เวลา</th><th>วันที่</th></tr>`;
-      filtered.slice(0, 5).forEach((item, index) => {
-        let rankIcon = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `${index+1}`));
-        html += `<tr><td>${rankIcon}</td><td>${item.user}</td><td><strong>${item.score}/20</strong></td><td>${item.timeStr}</td><td>${item.date}</td></tr>`;
-      });
-      html += `</table>`;
-      container.innerHTML = html;
+      try {
+        let { data, error } = await _supabase
+          .from('practice_history')
+          .select('username, score, time_sec, time_str, created_at')
+          .eq('mode', mode)
+          .order('score', { ascending: false })
+          .order('time_sec', { ascending: true })
+          .limit(5);
+
+        if (error || !data || data.length === 0) {
+          container.innerHTML = `<p style="font-size:0.9rem; color:#666;">ยังไม่มีข้อมูลการฝึกในหมวดนี้</p>`;
+          return;
+        }
+
+        let html = `<table class="leaderboard-table">
+                      <tr><th>อันดับ</th><th>ผู้ใช้</th><th>คะแนน</th><th>เวลา</th><th>วันที่</th></tr>`;
+        data.forEach((item, index) => {
+          let rankIcon = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `${index+1}`));
+          let dateStr = new Date(item.created_at).toLocaleDateString();
+          html += `<tr><td>${rankIcon}</td><td>${item.username}</td><td><strong>${item.score}/20</strong></td><td>${item.time_str}</td><td>${dateStr}</td></tr>`;
+        });
+        html += `</table>`;
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = `<p style="font-size:0.9rem; color:red;">ไม่สามารถโหลดลีดเดอร์บอร์ดได้</p>`;
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
       const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
       const userName = localStorage.getItem('bridge_user_name');
-      const authNavBtn = document.getElementById('authNavBtn');
+      const authBtn = document.getElementById('authNavBtn');
+      const authContainer = document.getElementById('authNavContainer');
 
-      if (isLogged && authNavBtn) {
-        authNavBtn.textContent = `👤 ${userName || 'สมาชิก'}`;
-        authNavBtn.href = '#';
-        authNavBtn.onclick = (e) => {
+      if (isLogged) {
+        authBtn.textContent = `👤 ${userName || 'สมาชิก'} ▾`;
+        authBtn.href = '#';
+        authBtn.onclick = (e) => {
           e.preventDefault();
-          if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
-            localStorage.removeItem('bridge_user_logged');
-            localStorage.removeItem('bridge_user_name');
-            window.location.href = '../index.html';
+          authContainer.classList.toggle('active');
+        };
+
+        window.onclick = (e) => {
+          if (!authContainer.contains(e.target)) {
+            authContainer.classList.remove('active');
           }
         };
 
-        // แสดงลีดเดอร์บอร์ดในหน้าเมนูหลักสำหรับสมาชิก
         document.getElementById('memberDashboard').classList.remove('hidden');
         loadLeaderboard('opening');
+      } else {
+        authBtn.textContent = 'เข้าสู่ระบบ';
+        authBtn.href = '../login.html';
       }
     });
   </script>
