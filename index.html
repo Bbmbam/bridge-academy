@@ -42,7 +42,7 @@
       .compare-actions .btn { flex: 1; }
     }
 
-    /* สไตล์สำหรับการล็อกฟังก์ชันเมื่อเป็น Guest ให้ปุ่มเป็นสีแดงและคลิกพาไปหน้าล็อกอิน */
+    /* สไตล์สำหรับการล็อกฟังก์ชันเมื่อเป็น Guest */
     .locked-feature {
       opacity: 0.6;
       position: relative;
@@ -60,9 +60,6 @@
     body.is-guest .locked-feature {
       opacity: 0.65;
       filter: grayscale(0.2);
-    }
-    body.is-guest .locked-feature a {
-      pointer-events: auto; /* เปิดให้คลิกได้แต่ลิงก์จะถูกดักไปหน้าล็อกอิน */
     }
     body.is-guest .locked-badge {
       display: inline-block;
@@ -102,8 +99,8 @@
 
     <h2 class="section-title">📖 เรียนรู้</h2>
     <div class="grid">
-      <!-- ล็อกระบบประมูลคู่มือเชิงลึกสำหรับ Guest -->
-      <div class="card locked-feature" onclick="checkAuthRedirect('system/index.html')">
+      <!-- การ์ดระบบประมูล -->
+      <div class="card locked-feature" id="cardSystem" onclick="checkAuthRedirect('system/index.html', true)">
         <div class="card-header">
           <div class="card-icon">📘</div>
           <div>
@@ -113,7 +110,7 @@
         </div>
         <h3>ระบบ Shape Before Strength</h3>
         <p>หลัก Transfer First, Shape Before Strength และ Core Engine สำหรับมือ 16+ พร้อมแผนผังการประมูลที่กดดูได้ทีละชั้น</p>
-        <span class="more" style="color: #dc3545;">กรุณาเข้าสู่ระบบเพื่อใช้งาน →</span>
+        <span class="more" id="moreSystem" style="color: #dc3545;">กรุณาเข้าสู่ระบบเพื่อใช้งาน →</span>
       </div>
 
       <!-- เปิดให้ใช้: นับแต้ม -->
@@ -161,7 +158,7 @@
     <h2 class="section-title">🔍 วิเคราะห์</h2>
     <div class="grid">
       <!-- ล็อก: วิเคราะห์มือเดียว -->
-      <div class="card locked-feature" onclick="checkAuthRedirect('analyzer/hand.html')">
+      <div class="card locked-feature" onclick="checkAuthRedirect('analyzer/hand.html', true)">
         <div class="card-header">
           <div class="card-icon">🃏</div>
           <div>
@@ -171,11 +168,11 @@
         </div>
         <h3>วิเคราะห์ไพ่ในมือ 13 ใบ</h3>
         <p>กรอกไพ่ในมือ แล้วระบบจะประเมิน HCP รูปมือ และแนะนำ Opening Bid / Response ตามระบบ</p>
-        <span class="more" style="color: #dc3545;">กรุณาเข้าสู่ระบบเพื่อใช้งาน →</span>
+        <span class="more locked-text" style="color: #dc3545;">กรุณาเข้าสู่ระบบเพื่อใช้งาน →</span>
       </div>
 
       <!-- ล็อก: วิเคราะห์ 4 มือ -->
-      <div class="card locked-feature" onclick="checkAuthRedirect('analyzer/deal.html')">
+      <div class="card locked-feature" onclick="checkAuthRedirect('analyzer/deal.html', true)">
         <div class="card-header">
           <div class="card-icon">🧠</div>
           <div>
@@ -185,7 +182,7 @@
         </div>
         <h3>วิเคราะห์ 4 มือ</h3>
         <p>กรอกไพ่ North, South, East, West หรือ import ไฟล์ PBN/LIN เพื่อดู Auction และ Double Dummy</p>
-        <span class="more" style="color: #dc3545;">กรุณาเข้าสู่ระบบเพื่อใช้งาน →</span>
+        <span class="more locked-text" style="color: #dc3545;">กรุณาเข้าสู่ระบบเพื่อใช้งาน →</span>
       </div>
     </div>
 
@@ -204,7 +201,7 @@
   </main>
 
   <footer>
-    <p>ระบบ Shape Before Strength v0.x · <a href="https://github.com/Bbmbam/bridge-academy">ดูโค้ดบน GitHub</a> · <a href="privacy.html">นโยบายความเป็นส่วนตัว</a></p>
+    <p>ระบบ Shape Before Strength v0.x · <a href="https://github.com/Bbmbam/bridge-academy">ดูโค้ดบนGitHub</a> · <a href="privacy.html">นโยบายความเป็นส่วนตัว</a></p>
     <p>&copy; 2026 Bridge Bidding Classroom</p>
   </footer>
 
@@ -266,10 +263,9 @@
       closeCompareModal();
     }
 
-    // ฟังก์ชันเช็กสถานะ ถ้ายังไม่ล็อกอินคลิกแล้วเด้งไปหน้าล็อกอิน
-    function checkAuthRedirect(targetUrl) {
+    function checkAuthRedirect(targetUrl, isLocked) {
       const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
-      if (isLogged) {
+      if (isLogged || !isLocked) {
         window.location.href = targetUrl;
       } else {
         window.location.href = 'login.html';
@@ -283,12 +279,24 @@
       const authNavBtn = document.getElementById('authNavBtn');
 
       if (isLogged) {
-        // ถ้าล็อกอินแล้ว ปลดล็อกฟีเจอร์ทั้งหมดทันที และเปลี่ยนปุ่มบนเมนูเป็นชื่อผู้ใช้
+        // ถ้าล็อกอินแล้ว: เอาคลาส guest ออก เพื่อปลดล็อกการแสดงผลทั้งหมด
         document.body.classList.remove('is-guest');
-        // คืนค่าการคลิกการ์ดให้วิ่งไปหน้าเนื้อหาจริง
+        
+        // ซ่อนป้ายเตือนสีแดงและปรับข้อความในการ์ดให้เป็นปกติ
+        document.querySelectorAll('.locked-badge').forEach(badge => badge.style.display = 'none');
         document.querySelectorAll('.locked-feature').forEach(card => {
-          card.removeAttribute('onclick');
+          card.style.opacity = '1';
         });
+        document.querySelectorAll('.locked-text').forEach(text => {
+          text.style.color = 'var(--secondary)';
+          text.textContent = 'เริ่มใช้งาน →';
+        });
+        const moreSys = document.getElementById('moreSystem');
+        if (moreSys) {
+          moreSys.style.color = 'var(--secondary)';
+          moreSys.textContent = 'อ่านคู่มือ →';
+        }
+
         if (authNavBtn) {
           authNavBtn.textContent = `👤 ${userName || 'สมาชิก'}`;
           authNavBtn.href = '#';
@@ -302,7 +310,7 @@
           };
         }
       } else {
-        // ถ้ายังไม่ได้ล็อกอิน เช็กว่าเคยแสดงป๊อปอัพไปแล้วหรือยังในเซสชันนี้
+        // ถ้ายังไม่ได้ล็อกอิน เช็กการแสดงป๊อปอัพครั้งแรก
         const popupShown = sessionStorage.getItem('popup_shown');
         if (!popupShown) {
           openCompareModal();
