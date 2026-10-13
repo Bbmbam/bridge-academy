@@ -9,6 +9,59 @@
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/main.js" defer></script>
   <style>
+    /* เลย์เอาต์แบบ 2 คอลัมน์ (ซ้ายสารบัญ, ขวาเนื้อหา) */
+    .learn-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (min-width: 900px) {
+      .learn-layout {
+        grid-template-columns: 260px 1fr;
+      }
+    }
+
+    /* สไตล์กล่องสารบัญ */
+    .toc-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.05);
+      border-top: 4px solid var(--primary);
+      position: sticky;
+      top: calc(var(--nav-h) + 16px);
+    }
+    .toc-card h3 {
+      font-size: 1rem;
+      color: var(--primary);
+      margin: 0 0 10px 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #eee;
+    }
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .toc-list a {
+      display: block;
+      padding: 6px 10px;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: background 0.2s, color 0.2s;
+    }
+    .toc-list a:hover {
+      background: var(--accent-light);
+      color: var(--secondary);
+    }
+
+    /* สไตล์มินิเกมและตัวช่วย */
     .game-box { background: #1b4332; border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid #2d6a4f; color: #fff; }
     .hcp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; text-align: center; }
     @media (min-width: 600px) { .hcp-grid { grid-template-columns: repeat(4, 1fr); } }
@@ -35,6 +88,9 @@
     .helper-box { background: #e8f5e9; border-radius: 10px; padding: 15px; margin-top: 15px; border: 1px solid #c8e6c9; color: #212529; }
     .toggle-helper-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid #52b788; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 0.85rem; font-weight: bold; }
     .toggle-helper-btn:hover { background: rgba(255,255,255,0.25); }
+
+    /* ให้หน้าจอเลื่อนนุ่มนวลเวลาคลิกสารบัญ */
+    html { scroll-behavior: smooth; }
   </style>
 </head>
 <body>
@@ -44,7 +100,7 @@
     <button class="menu-toggle" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="navLinks">☰</button>
     <div class="nav-links" id="navLinks">
       <a href="../system/index.html">ระบบประมูล</a>
-      <a href="../learn/counting.html">นับไพ่</a>
+      <a href="../learn/counting.html" aria-current="page">นับไพ่</a>
       <a href="../practice/index.html">ฝึกประมูล</a>
       <a href="../analyzer/hand.html">วิเคราะห์</a>
       <a href="../login.html" class="btn-login">เข้าสู่ระบบ</a>
@@ -52,99 +108,126 @@
   </nav>
 
   <main class="container">
-    <h1>บทที่ 1: การนับแต้มและนับไพ่ (Counting & HCP)</h1>
-    
-    <div class="card" style="margin-bottom: 20px;">
-      <h3>1. High Card Points (HCP) - แต้มไพ่สูง</h3>
-      <p>ในบริดจ์ ไพ่รูปหน้าคนและ Ace มีแต้มสะสมเพื่อให้รู้ว่ามือของเรามีกำลังมากแค่ไหน โดยนับตามมาตรฐานสากล:</p>
+    <h1>บทที่ 1: การนับแต้มและนับไพ่</h1>
+
+    <div class="learn-layout">
       
-      <table class="guide-table">
-        <tr><th>ไพ่ (Card)</th><th>แต้ม (HCP)</th></tr>
-        <tr><td><strong>Ace (A)</strong></td><td>4 แต้ม</td></tr>
-        <tr><td><strong>King (K)</strong></td><td>3 แต้ม</td></tr>
-        <tr><td><strong>Queen (Q)</strong></td><td>2 แต้ม</td></tr>
-        <tr><td><strong>Jack (J)</strong></td><td>1 แต้ม</td></tr>
-        <tr><td>10 ลงมา</td><td>0 แต้ม</td></tr>
-      </table>
-      <p>รวมทั้งสำรับ (52 ใบ) จะมีแต้ม HCP ทั้งหมด <strong>40 แต้มพอดี</strong></p>
-    </div>
-
-    <!-- มินิเกมฝึกนับแต้ม -->
-    <div class="game-box">
-      <div class="score-board">
-        <span>🎮 แบบฝึกหัดนับแต้ม HCP</span>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <button class="toggle-helper-btn" onclick="toggleHelper()">🧮 เปิด/ปิด ตัวช่วยนับแต้ม</button>
-          <span id="scoreText">ถูก 0/0</span>
-        </div>
-      </div>
-      <p style="margin: 0 0 8px 0; color: #d8f3dc; font-size: 0.9rem;">ดูไพ่ 13 ใบในมือ แล้วคำนวณว่ามีแต้ม HCP รวมเท่าไหร่?</p>
-      
-      <div class="bridge-table" id="bridgeTable"></div>
-
-      <div style="margin-top: 8px;">
-        <div class="game-controls">
-          <input type="number" id="userAns" placeholder="ใส่ตัวเลข HCP เช่น 12" onkeydown="if(event.key==='Enter') checkAnswer()">
-          <button class="btn btn-primary" onclick="checkAnswer()" id="btnCheck" style="padding: 8px 16px;">ตรวจคำตอบ</button>
-          <button class="btn" onclick="generateRandomHand()" style="background: #38b000; color: #fff; border: none; padding: 8px 14px;">เปลี่ยนมือ</button>
-        </div>
-        <div id="gameFeedback" style="margin-top: 8px; font-weight: bold; min-height: 22px; font-size: 0.95rem;"></div>
-      </div>
-
-      <!-- ตัวช่วยนับแต้ม -->
-      <div class="helper-box" id="helperBox" hidden>
-        <h4 style="margin: 0 0 5px 0; color: var(--primary);">💡 ตัวช่วยนับแต้ม</h4>
-        <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: var(--muted);">เลื่อนปรับจำนวนไพ่หน้าคนเพื่อช่วยทดลองคำนวณแต้ม:</p>
-        
-        <div class="hcp-grid">
-          <div class="hcp-item"><span>A (4แต้ม)</span><strong id="cntA">0</strong>ใบ <br><input type="range" id="rangeA" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
-          <div class="hcp-item"><span>K (3แต้ม)</span><strong id="cntK">0</strong>ใบ <br><input type="range" id="rangeK" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
-          <div class="hcp-item"><span>Q (2แต้ม)</span><strong id="cntQ">0</strong>ใบ <br><input type="range" id="rangeQ" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
-          <div class="hcp-item"><span>J (1แต้ม)</span><strong id="cntJ">0</strong>ใบ <br><input type="range" id="rangeJ" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
-        </div>
-        
-        <div class="result-bar" id="resultHCP">รวมแต้มจากตัวช่วย: 0 แต้ม</div>
-      </div>
-    </div>
-
-    <!-- ปรับปรุงเนื้อหา Distribution Points -->
-    <div class="card" style="margin-bottom: 20px;">
-      <h3>2. Distribution Points (แต้มความยาวและความสั้นรูปมือ)</h3>
-      <p>เมื่อเราพบ <strong>Fit</strong> (มีไพ่สีทรัมป์เดียวกันรวมกัน 8 ใบขึ้นไปกับคู่ขา) นอกเหนือจาก HCP แล้ว เราจะสามารถนับแต้มเสริมจากรูปทรงไพ่ (Short Suit Points) เพิ่มได้ดังนี้:</p>
-      <ul>
-        <li><strong>Void (ไม่มีไพ่ในสีนั้นเลย):</strong> นับเพิ่ม 3 แต้ม</li>
-        <li><strong>Singleton (มีไพ่ในสีนั้นแค่ 1 ใบ):</strong> นับเพิ่ม 2 แต้ม</li>
-        <li><strong>Doubleton (มีไพ่ในสีนั้น 2 ใบ):</strong> นับเพิ่ม 1 แต้ม</li>
-      </ul>
-      <p style="margin-top: 10px; font-size: 0.9rem; color: var(--muted);"><em>หมายเหตุ: แต้มความสั้นนี้มักจะนับเพิ่มเฉพาะในมือที่มีความสั้น (Short Hand) หลังจากที่รู้ว่ามี Fit กันแล้ว เพื่อประเมินสัญญาสัญญาเกม (Game Contract) หรือ Slam</em></p>
-    </div>
-
-    <!-- ปรับปรุงเนื้อหา Losing Trick Count ให้ถูกต้องตามหลักสากล -->
-    <div class="card" style="margin-bottom: 20px;">
-      <h3>3. Losing Trick Count (LTC - การนับแต้มเสีย)</h3>
-      <p>เป็นวิธีประเมินกำลังของมือไพ่ (นิยมใช้กับมือที่มียาว/unbalanced หรือประเมินความ Fit) โดยนับจำนวนตัวที่จะเสีย (Loser) ในแต่ละสี โดยดูจาก **ไพ่ 3 ตัวแรก (AKQ)** และ **จำนวนใบจริง** ที่ถืออยู่ในสีนั้น (สูงสุดไม่เกิน 3 Loser ต่อสี และไม่เกินจำนวนใบที่มี):</p>
-      <ul>
-        <li><strong>สีที่ไม่มีไพ่เลย (Void):</strong> นับ <strong>0 Loser</strong></li>
-        <li><strong>มีไพ่ 1 ใบ:</strong> ถ้าเป็น A, K หรือ Q นับ <strong>1 Loser</strong> (ถ้าไม่มีตัวสูงนับ 1)</li>
-        <li><strong>มีไพ่ 2 ใบ:</strong> 
-          <ul>
-            <li>A-K, A-Q, K-Q หรือมีตัวสูง 1 ตัวร่วมกับไพ่เล็ก: นับ <strong>1 Loser</strong></li>
-            <li>ไพ่เล็กล้วน 2 ใบ: นับ <strong>2 Loser</strong></li>
+      <!-- ฝั่งซ้าย: สารบัญ -->
+      <aside>
+        <nav class="toc-card" aria-label="สารบัญบทเรียน">
+          <h3>📑 สารบัญเนื้อหา</h3>
+          <ul class="toc-list">
+            <li><a href="#section-hcp">1. แต้ม HCP และมินิเกม</a></li>
+            <li><a href="#section-dist">2. แต้มรูปทรง (Distribution)</a></li>
+            <li><a href="#section-ltc">3. แต้มเสีย (LTC)</a></li>
           </ul>
-        </li>
-        <li><strong>มีไพ่ตั้งแต่ 3 ใบขึ้นไป:</strong>
-          <ul>
-            <li>A-K-Q, A-K-x, A-Q-x: นับ <strong>0 หรือ 1 Loser</strong> ตามความแข็งของไพ่</li>
-            <li>มีตัวสูง 1 หรือ 2 ตัว (เช่น A-x-x, K-x-x, Q-x-x): นับ <strong>2 Loser</strong></li>
-            <li>ไม่มีไพ่สูงเลย (ไพ่เล็กล้วน 3 ใบขึ้นไป): นับ <strong>3 Loser</strong></li>
-          </ul>
-        </li>
-      </ul>
-      <p style="margin-top: 10px; font-size: 0.9rem; color: var(--muted);"><em>หลักการจำง่ายๆ: แต่ละสีจะนับ Loser จากไพ่ 3 ตัวแรก (AKQ) ตัวที่ไม่มีคือ Loser (เช่น มี A ตัวเดียวไม่มี K, Q = เสีย 2 ตัว คือ K กับ Q นับเป็น 2 Loser)</em></p>
-    </div>
+        </nav>
+      </aside>
 
-    <div style="margin-top: 30px; text-align: center;">
-      <a href="../practice/index.html" class="btn btn-primary">ไปหน้าฝึกประมูลต่อ →</a>
+      <!-- ฝั่งขวา: เนื้อหาบทเรียนทั้งหมด -->
+      <div>
+        
+        <!-- หัวข้อที่ 1: HCP + มินิเกม -->
+        <section id="section-hcp" style="scroll-margin-top: 80px;">
+          <div class="card" style="margin-bottom: 20px;">
+            <h3>1. High Card Points (HCP) - แต้มไพ่สูง</h3>
+            <p>ในบริดจ์ ไพ่รูปหน้าคนและ Ace มีแต้มสะสมเพื่อให้รู้ว่ามือของเรามีกำลังมากแค่ไหน โดยนับตามมาตรฐานสากล:</p>
+            
+            <table class="guide-table">
+              <tr><th>ไพ่ (Card)</th><th>แต้ม (HCP)</th></tr>
+              <tr><td><strong>Ace (A)</strong></td><td>4 แต้ม</td></tr>
+              <tr><td><strong>King (K)</strong></td><td>3 แต้ม</td></tr>
+              <tr><td><strong>Queen (Q)</strong></td><td>2 แต้ม</td></tr>
+              <tr><td><strong>Jack (J)</strong></td><td>1 แต้ม</td></tr>
+              <tr><td>10 ลงมา</td><td>0 แต้ม</td></tr>
+            </table>
+            <p>รวมทั้งสำรับ (52 ใบ) จะมีแต้ม HCP ทั้งหมด <strong>40 แต้มพอดี</strong></p>
+          </div>
+
+          <!-- มินิเกมฝึกนับแต้ม -->
+          <div class="game-box">
+            <div class="score-board">
+              <span>🎮 แบบฝึกหัดนับแต้ม HCP</span>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="toggle-helper-btn" onclick="toggleHelper()">🧮 เปิด/ปิด ตัวช่วยนับแต้ม</button>
+                <span id="scoreText">ถูก 0/0</span>
+              </div>
+            </div>
+            <p style="margin: 0 0 8px 0; color: #d8f3dc; font-size: 0.9rem;">ดูไพ่ 13 ใบในมือ แล้วคำนวณว่ามีแต้ม HCP รวมเท่าไหร่?</p>
+            
+            <div class="bridge-table" id="bridgeTable"></div>
+
+            <div style="margin-top: 8px;">
+              <div class="game-controls">
+                <input type="number" id="userAns" placeholder="ใส่ตัวเลข HCP เช่น 12" onkeydown="if(event.key==='Enter') checkAnswer()">
+                <button class="btn btn-primary" onclick="checkAnswer()" id="btnCheck" style="padding: 8px 16px;">ตรวจคำตอบ</button>
+                <button class="btn" onclick="generateRandomHand()" style="background: #38b000; color: #fff; border: none; padding: 8px 14px;">เปลี่ยนมือ</button>
+              </div>
+              <div id="gameFeedback" style="margin-top: 8px; font-weight: bold; min-height: 22px; font-size: 0.95rem;"></div>
+            </div>
+
+            <!-- ตัวช่วยนับแต้ม -->
+            <div class="helper-box" id="helperBox" hidden>
+              <h4 style="margin: 0 0 5px 0; color: var(--primary);">💡 ตัวช่วยนับแต้ม</h4>
+              <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: var(--muted);">เลื่อนปรับจำนวนไพ่หน้าคนเพื่อช่วยทดลองคำนวณแต้ม:</p>
+              
+              <div class="hcp-grid">
+                <div class="hcp-item"><span>A (4แต้ม)</span><strong id="cntA">0</strong>ใบ <br><input type="range" id="rangeA" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
+                <div class="hcp-item"><span>K (3แต้ม)</span><strong id="cntK">0</strong>ใบ <br><input type="range" id="rangeK" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
+                <div class="hcp-item"><span>Q (2แต้ม)</span><strong id="cntQ">0</strong>ใบ <br><input type="range" id="rangeQ" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
+                <div class="hcp-item"><span>J (1แต้ม)</span><strong id="cntJ">0</strong>ใบ <br><input type="range" id="rangeJ" min="0" max="4" value="0" style="width:100%; margin-top:4px;" oninput="calcHCP()"></div>
+              </div>
+              
+              <div class="result-bar" id="resultHCP">รวมแต้มจากตัวช่วย: 0 แต้ม</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- หัวข้อที่ 2: Distribution Points -->
+        <section id="section-dist" style="scroll-margin-top: 80px;">
+          <div class="card" style="margin-bottom: 20px;">
+            <h3>2. Distribution Points (แต้มความยาวและความสั้นรูปมือ)</h3>
+            <p>เมื่อเราพบ <strong>Fit</strong> (มีไพ่สีทรัมป์เดียวกันรวมกัน 8 ใบขึ้นไปกับคู่ขา) นอกเหนือจาก HCP แล้ว เราจะสามารถนับแต้มเสริมจากรูปทรงไพ่ (Short Suit Points) เพิ่มได้ดังนี้:</p>
+            <ul>
+              <li><strong>Void (ไม่มีไพ่ในสีนั้นเลย):</strong> นับเพิ่ม 3 แต้ม</li>
+              <li><strong>Singleton (มีไพ่ในสีนั้นแค่ 1 ใบ):</strong> นับเพิ่ม 2 แต้ม</li>
+              <li><strong>Doubleton (มีไพ่ในสีนั้น 2 ใบ):</strong> นับเพิ่ม 1 แต้ม</li>
+            </ul>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: var(--muted);"><em>หมายเหตุ: แต้มความสั้นนี้มักจะนับเพิ่มเฉพาะในมือที่มีความสั้น (Short Hand) หลังจากที่รู้ว่ามี Fit กันแล้ว เพื่อประเมินสัญญาเกม (Game Contract) หรือ Slam</em></p>
+          </div>
+        </section>
+
+        <!-- หัวข้อที่ 3: LTC -->
+        <section id="section-ltc" style="scroll-margin-top: 80px;">
+          <div class="card" style="margin-bottom: 20px;">
+            <h3>3. Losing Trick Count (LTC - การนับแต้มเสีย)</h3>
+            <p>เป็นวิธีประเมินกำลังของมือไพ่ (นิยมใช้กับมือที่มียาว/unbalanced หรือประเมินความ Fit) โดยนับจำนวนตัวที่จะเสีย (Loser) ในแต่ละสี โดยดูจาก **ไพ่ 3 ตัวแรก (AKQ)** และ **จำนวนใบจริง** ที่ถืออยู่ในสีนั้น (สูงสุดไม่เกิน 3 Loser ต่อสี และไม่เกินจำนวนใบที่มี):</p>
+            <ul>
+              <li><strong>สีที่ไม่มีไพ่เลย (Void):</strong> นับ <strong>0 Loser</strong></li>
+              <li><strong>มีไพ่ 1 ใบ:</strong> ถ้าเป็น A, K หรือ Q นับ <strong>1 Loser</strong> (ถ้าไม่มีตัวสูงนับ 1)</li>
+              <li><strong>มีไพ่ 2 ใบ:</strong> 
+                <ul>
+                  <li>A-K, A-Q, K-Q หรือมีตัวสูง 1 ตัวร่วมกับไพ่เล็ก: นับ <strong>1 Loser</strong></li>
+                  <li>ไพ่เล็กล้วน 2 ใบ: นับ <strong>2 Loser</strong></li>
+                </ul>
+              </li>
+              <li><strong>มีไพ่ตั้งแต่ 3 ใบขึ้นไป:</strong>
+                <ul>
+                  <li>A-K-Q, A-K-x, A-Q-x: นับ <strong>0 หรือ 1 Loser</strong> ตามความแข็งของไพ่</li>
+                  <li>มีตัวสูง 1 หรือ 2 ตัว (เช่น A-x-x, K-x-x, Q-x-x): นับ <strong>2 Loser</strong></li>
+                  <li>ไม่มีไพ่สูงเลย (ไพ่เล็กล้วน 3 ใบขึ้นไป): นับ <strong>3 Loser</strong></li>
+                </ul>
+              </li>
+            </ul>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: var(--muted);"><em>หลักการจำง่ายๆ: แต่ละสีจะนับ Loser จากไพ่ 3 ตัวแรก (AKQ) ตัวที่ไม่มีคือ Loser</em></p>
+          </div>
+        </section>
+
+        <div style="margin-top: 30px; text-align: center;">
+          <a href="../practice/index.html" class="btn btn-primary">ไปหน้าฝึกประมูลต่อ →</a>
+        </div>
+
+      </div>
     </div>
   </main>
 
