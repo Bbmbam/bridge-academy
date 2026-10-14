@@ -160,7 +160,7 @@
           <button class="btn" style="background:#dc2f02; color:#fff; padding:6px 12px; font-size:0.9rem;" onclick="pausePractice()" type="button">⏸ พัก</button>
         </div>
 
-        <!-- แถบสถานการณ์โต๊ะบริดจ์ -->
+        <!-- แถบสถานการณ์โต๊ะบริจด์ -->
         <div class="auction-status-bar" id="auctionStatusBar">
           <span>พาร์ทเนอร์เปิด: <span class="auction-badge" id="partnerBidBadge">1♥</span></span>
           <span style="opacity:0.8; font-size:0.9rem;" id="auctionPromptText">คุณจะประมูลรอบสองว่าอย่างไร?</span>
@@ -237,7 +237,7 @@
 
   <script>
     const SUPABASE_URL = 'https://oedgolwpnxuhsuulohyy.supabase.co';
-    const SUPABASE_KEY = '**_***********_******************_***__*******'; // ใส่คีย์จริงของคุณที่นี่
+    const SUPABASE_KEY = 'sb_publishable_bzBvrmkMZIvV5XRU1v_jDg__lRpzlXA';
 
     const QUESTIONS_PER_SET = 20;
     const MODE_LABELS = {
@@ -253,7 +253,7 @@
 
     let _supabase = null;
     try {
-      if (window.supabase && !SUPABASE_KEY.startsWith('วาง_') && !SUPABASE_KEY.includes('***')) {
+      if (window.supabase) {
         _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
     } catch (e) { console.error('Supabase init error:', e); }
@@ -323,10 +323,10 @@
           partnerBid = "1NT";
           res = response_1nt(hand.hcp, hand.shape);
         } else if (mode === 'opener_rebid_1c') {
-          partnerBid = "1♣ - 1♥"; // สมมติเคสตัวอย่างพาร์ทเนอร์ตอบ 1H
+          partnerBid = "1♣ - 1♥";
           res = opener_rebid_1c("1H", hand.hcp, hand.shape);
         } else if (mode === 'opener_rebid_1d') {
-          partnerBid = "1♦ - 1NT"; // สมมติเคสตัวอย่างพาร์ทเนอร์ตอบ 1NT
+          partnerBid = "1♦ - 1NT";
           res = opener_rebid_1d("1N", hand.hcp, hand.shape);
         }
 
@@ -353,7 +353,6 @@
       document.getElementById('quizTitle').textContent = `หมวด: ${MODE_LABELS[mode] || mode}`;
       document.getElementById('quizTimer').textContent = '⏱ เวลา: 00:00';
 
-      // ปรับหน้าจอแสดงผลตามโหมด (Opening vs Response/Rebid)
       const statusBar = document.getElementById('auctionStatusBar');
       const mainInstr = document.getElementById('mainInstruction');
       const q = questionsList[0];
@@ -531,7 +530,7 @@
 
       const status = document.getElementById('saveStatus');
       if (!isLoggedIn()) { status.innerHTML = '<span style="color:#666;">เข้าสู่ระบบเพื่อบันทึกสถิติข้ามเครื่อง</span>'; return; }
-      if (!_supabase) { status.innerHTML = '<span style="color:#d00;">❌ ยังไม่ได้ใส่คีย์ Supabase ในโค้ด</span>'; return; }
+      if (!_supabase) { status.innerHTML = '<span style="color:#d00;">❌ ยังไม่ได้เชื่อมต่อ Supabase</span>'; return; }
 
       status.innerHTML = '<span style="color:#666;">⏳ กำลังบันทึกผล...</span>';
       const { error } = await _supabase.from('practice_history').insert([{
@@ -581,7 +580,7 @@
       myBox.innerHTML = lbBox.innerHTML = '<p style="color:#666; font-size:0.9rem;">กำลังโหลด...</p>';
 
       if (!_supabase) {
-        lbBox.innerHTML = '<p style="color:#d00;">❌ ยังไม่ได้ใส่คีย์ Supabase ในโค้ด</p>';
+        lbBox.innerHTML = '<p style="color:#d00;">❌ ยังไม่ได้เชื่อมต่อ Supabase</p>';
         myBox.innerHTML = '';
         return;
       }
@@ -650,7 +649,6 @@
         authBtn.onclick = e => { e.preventDefault(); e.stopPropagation(); authContainer.classList.toggle('active'); };
         document.addEventListener('click', e => { if (!authContainer.contains(e.target)) authContainer.classList.remove('active'); });
         
-        // สร้างแท็บหมวดหมู่ใน Dashboard อัตโนมัติ
         const tabsContainer = document.getElementById('dashboardTabsContainer');
         tabsContainer.innerHTML = '';
         Object.keys(MODE_LABELS).forEach(m => {
