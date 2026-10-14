@@ -15,21 +15,26 @@
     .navbar .nav-links a { color: #fff !important; opacity: 0.9; text-decoration: none; padding: 6px 10px; border-radius: 6px; }
     .navbar .nav-links a:hover { opacity: 1; background: rgba(255,255,255,0.1); }
     
+    /* แก้ไขดรอปดาวน์ขวาบนให้ตัวหนังสือมองเห็นชัดเจน (บังคับสีดำ) */
     .user-menu-container { position: relative; display: inline-block; }
-    .user-dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: #fff; min-width: 170px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; overflow: hidden; }
-    .user-dropdown-content a { color: #111 !important; padding: 12px 16px; text-decoration: none; display: block; background: #fff !important; font-size: 0.95rem; }
+    .user-dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: #ffffff !important; min-width: 170px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; overflow: hidden; }
+    .user-dropdown-content a, .user-dropdown-content a:link, .user-dropdown-content a:visited { color: #111111 !important; padding: 12px 16px; text-decoration: none; display: block; background: #ffffff !important; font-size: 0.95rem; opacity: 1 !important; }
     .user-dropdown-content a:hover { background: #f1f1f1 !important; color: var(--primary) !important; }
     .user-menu-container.active .user-dropdown-content { display: block; }
 
-    .stats-container { max-width: 900px; margin: 30px auto; padding: 0 16px; }
+    .stats-container { max-width: 950px; margin: 30px auto; padding: 0 16px; }
     .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
     
-    .stat-box-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .stat-box-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 25px; }
     .stat-box { background: #f8f9fa; padding: 16px; border-radius: 10px; text-align: center; border: 1px solid #e9ecef; }
     .stat-box span { display: block; font-size: 0.85rem; color: #666; margin-bottom: 6px; }
-    .stat-box strong { font-size: 1.4rem; color: var(--primary); }
+    .stat-box strong { font-size: 1.3rem; color: var(--primary); }
 
-    .stats-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95rem; text-align: left; }
+    .filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-btn { background: #e9ecef; border: none; padding: 6px 14px; border-radius: 6px; font-family: 'Sarabun'; font-size: 0.9rem; font-weight: bold; cursor: pointer; color: #333; transition: 0.2s; }
+    .filter-btn.active { background: var(--primary); color: #fff; }
+
+    .stats-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.95rem; text-align: left; }
     .stats-table th, .stats-table td { padding: 12px 14px; border-bottom: 1px solid #eee; }
     .stats-table th { background: #f8f9fa; color: var(--primary); }
     .badge-mode { background: #e8f5e9; color: #2b9348; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; }
@@ -66,10 +71,20 @@
       <div id="loadingBox" style="text-align: center; padding: 30px; color: #666;">กำลังโหลดข้อมูลของคุณ...</div>
       
       <div id="contentBox" class="hidden">
+        <!-- แถบฟิลเตอร์หมวดหมู่ -->
+        <div class="filter-bar">
+          <span style="font-weight: bold; font-size: 0.9rem; margin-right: 5px;">📁 กรองหมวดหมู่:</span>
+          <button class="filter-btn active" onclick="filterStats('all', this)">รวมทุกหมวดหมู่</button>
+          <button class="filter-btn" onclick="filterStats('opening', this)">Opening</button>
+          <button class="filter-btn" onclick="filterStats('response_1c', this)">Response 1C</button>
+        </div>
+
+        <!-- 4 กล่องสถิติ -->
         <div class="stat-box-container">
-          <div class="stat-box"><span>จำนวนรอบที่ฝึกทั้งหมด</span><strong id="lblTotalGames">0 รอบ</strong></div>
+          <div class="stat-box"><span>จำนวนรอบที่ฝึก</span><strong id="lblTotalGames">0 รอบ</strong></div>
           <div class="stat-box"><span>คะแนนเฉลี่ยรวม</span><strong id="lblAvgScore">0 / 20</strong></div>
           <div class="stat-box"><span>อัตราตอบถูกรวม</span><strong id="lblAccuracy">0%</strong></div>
+          <div class="stat-box"><span>เวลาเฉลี่ยต่อข้อ</span><strong id="lblAvgTimePerQ">0.0s</strong></div>
         </div>
 
         <h3 style="margin-top: 30px; color: var(--primary);">🕒 ประวัติการฝึกซ้อมรายรอบ (ย้อนหลัง)</h3>
@@ -84,9 +99,7 @@
                 <th>เฉลี่ยต่อข้อ</th>
               </tr>
             </thead>
-            <tbody id="historyTableBody">
-              <!-- ข้อมูลจะถูกเติมด้วย JavaScript เฉพาะของ User นี้เท่านั้น -->
-            </tbody>
+            <tbody id="historyTableBody"></tbody>
           </table>
         </div>
       </div>
@@ -95,7 +108,7 @@
 
   <script>
     const SUPABASE_URL = 'https://oedgolwpnxuhsuulohyy.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_bzBvrmkMZIvV5XRU1v_jDg__lRpzlXA'; // ใช้คีย์เดียวกันกับหน้าอื่น
+    const SUPABASE_KEY = 'วาง_PUBLISHABLE_KEY_จริงตรงนี้'; // ใช้คีย์จริง
 
     let _supabase = null;
     try {
@@ -103,6 +116,9 @@
         _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
     } catch(e) { console.error("Supabase init error:", e); }
+
+    let allUserHistory = [];
+    let currentFilter = 'all';
 
     const isLoggedIn = () => localStorage.getItem('bridge_user_logged') === 'true';
     const currentUser = () => (localStorage.getItem('bridge_user_name') || '').trim();
@@ -129,13 +145,10 @@
         return;
       }
 
-      const username = currentUser();
-
-      // ดึงข้อมูลเฉพาะของ username นี้เท่านั้น (ปลอดภัย เป็นส่วนตัว ไม่ปะปนกับใคร)
       let { data, error } = await _supabase
         .from('practice_history')
         .select('*')
-        .eq('username', username)
+        .eq('username', currentUser())
         .order('id', { ascending: false });
 
       if (error) {
@@ -151,26 +164,56 @@
       loading.classList.add('hidden');
       content.classList.remove('hidden');
 
-      // คำนวณสถิติภาพรวม
-      let totalGames = data.length;
-      let totalScore = data.reduce((acc, curr) => acc + curr.score, 0);
+      allUserHistory = data;
+      renderStatsData(currentFilter);
+    }
+
+    function filterStats(mode, btnElement) {
+      currentFilter = mode;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      if(btnElement) btnElement.classList.add('active');
+      renderStatsData(mode);
+    }
+
+    function renderStatsData(filterMode) {
+      let filteredData = allUserHistory;
+      if (filterMode !== 'all') {
+        filteredData = allUserHistory.filter(h => h.mode === filterMode);
+      }
+
+      let tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+
+      if (filteredData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#666; padding:20px;">ไม่พบประวัติการฝึกซ้อมในหมวดนี้</td></tr>`;
+        document.getElementById('lblTotalGames').textContent = '0 รอบ';
+        document.getElementById('lblAvgScore').textContent = '0 / 20';
+        document.getElementById('lblAccuracy').textContent = '0%';
+        document.getElementById('lblAvgTimePerQ').textContent = '0.0s';
+        return;
+      }
+
+      let totalGames = filteredData.length;
+      let totalScore = filteredData.reduce((acc, curr) => acc + curr.score, 0);
       let avgScore = (totalScore / totalGames).toFixed(1);
       let accuracy = ((totalScore / (totalGames * 20)) * 100).toFixed(1);
+
+      // คำนวณเวลาเฉลี่ยต่อข้อรวมจากเวลา sec ทั้งหมด
+      let totalSecSum = filteredData.reduce((acc, curr) => acc + (curr.time_sec || 0), 0);
+      let overallAvgSecPerQ = (totalSecSum / (totalGames * 20)).toFixed(1);
 
       document.getElementById('lblTotalGames').textContent = `${totalGames} รอบ`;
       document.getElementById('lblAvgScore').textContent = `${avgScore} / 20`;
       document.getElementById('lblAccuracy').textContent = `${accuracy}%`;
+      document.getElementById('lblAvgTimePerQ').textContent = `${overallAvgSecPerQ}s`;
 
-      // เติมตารางประวัติย้อนหลัง
-      let tbody = document.getElementById('historyTableBody');
-      tbody.innerHTML = '';
-      data.forEach((h, idx) => {
+      filteredData.forEach((h, idx) => {
         let dateStr = h.created_at ? new Date(h.created_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : 'เร็วๆนี้';
         let modeName = h.mode === 'opening' ? 'Opening' : (h.mode === 'response_1c' ? 'Response 1C' : h.mode);
         
         let tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>#${data.length - idx} <br><small style="color:#888;">${dateStr}</small></td>
+          <td>#${filteredData.length - idx} <br><small style="color:#888;">${dateStr}</small></td>
           <td><span class="badge-mode">${modeName}</span></td>
           <td><strong>${h.score} / 20</strong> (${Math.round((h.score/20)*100)}%)</td>
           <td>${h.time_str}</td>
