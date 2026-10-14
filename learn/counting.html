@@ -143,6 +143,34 @@
     .toggle-helper-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid #52b788; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 0.85rem; font-weight: bold; }
     .toggle-helper-btn:hover { background: rgba(255,255,255,0.25); }
 
+    /* สไตล์ดรอปดาวน์ขวาบน */
+    .user-menu-container { position: relative; display: inline-block; }
+    .user-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 110%;
+      background-color: #ffffff !important;
+      min-width: 170px;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      z-index: 1000;
+      overflow: hidden;
+    }
+    .user-dropdown-content a {
+      color: #111111 !important;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      font-size: 0.95rem;
+      background-color: #ffffff !important;
+    }
+    .user-dropdown-content a:hover { 
+      background-color: #f1f1f1 !important; 
+      color: var(--primary) !important; 
+    }
+    .user-menu-container.active .user-dropdown-content { display: block; }
+
     html { scroll-behavior: smooth; }
   </style>
 </head>
@@ -153,10 +181,17 @@
     <button class="menu-toggle" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="navLinks">☰</button>
     <div class="nav-links" id="navLinks">
       <a href="../system/index.html">ระบบประมูล</a>
-      <a href="../learn/counting.html" aria-current="page">นับไพ่</a>
+      <a href="../learn/counting.html" aria-current="page" class="active">นับไพ่</a>
       <a href="../practice/index.html">ฝึกประมูล</a>
       <a href="../analyzer/hand.html">วิเคราะห์</a>
-      <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
+      
+      <div id="authNavContainer" class="user-menu-container">
+        <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
+        <div class="user-dropdown-content">
+          <a href="../practice/index.html">📊 สถิติตัวเอง</a>
+          <a href="#" onclick="logoutUser(); return false;">🚪 ออกจากระบบ</a>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -298,23 +333,32 @@
   </div>
 
   <script>
+    function logoutUser() {
+      if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+        localStorage.removeItem('bridge_user_logged');
+        localStorage.removeItem('bridge_user_name');
+        window.location.reload();
+      }
+    }
+
     // ตรวจสอบสถานะการล็อกอินตอนโหลดหน้าเว็บ เพื่ออัปเดตปุ่มขวาบน
     window.addEventListener('DOMContentLoaded', () => {
       const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
       const userName = localStorage.getItem('bridge_user_name');
-      const authNavBtn = document.getElementById('authNavBtn');
+      const authContainer = document.getElementById('authNavContainer');
+      let authBtn = document.getElementById('authNavBtn');
 
-      if (isLogged && authNavBtn) {
-        authNavBtn.textContent = `👤 ${userName || 'สมาชิก'}`;
-        authNavBtn.href = '#';
-        authNavBtn.onclick = (e) => {
+      if (isLogged && authBtn) {
+        authBtn.textContent = `👤 ${userName || 'สมาชิก'} ▾`;
+        authBtn.href = '#';
+        authBtn.onclick = (e) => {
           e.preventDefault();
-          if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
-            localStorage.removeItem('bridge_user_logged');
-            localStorage.removeItem('bridge_user_name');
-            window.location.href = '../index.html';
-          }
+          e.stopPropagation();
+          authContainer.classList.toggle('active');
         };
+        window.addEventListener('click', () => {
+          authContainer.classList.remove('active');
+        });
       }
     });
 
