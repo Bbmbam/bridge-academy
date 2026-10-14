@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1b4332">
+  <title>สถิติส่วนตัว - Bridge Classroom</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --primary-dark: #112d21; --card-bg: #113825; }
+    body { font-family: 'Sarabun', sans-serif; background: #f4f7f5; margin: 0; color: #333; }
+    
+    .navbar .nav-links a { color: #fff !important; opacity: 0.9; text-decoration: none; padding: 6px 10px; border-radius: 6px; }
+    .navbar .nav-links a:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+    
+    .user-menu-container { position: relative; display: inline-block; }
+    .user-dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: #fff; min-width: 170px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; overflow: hidden; }
+    .user-dropdown-content a { color: #111 !important; padding: 12px 16px; text-decoration: none; display: block; background: #fff !important; font-size: 0.95rem; }
+    .user-dropdown-content a:hover { background: #f1f1f1 !important; color: var(--primary) !important; }
+    .user-menu-container.active .user-dropdown-content { display: block; }
+
+    .stats-container { max-width: 900px; margin: 30px auto; padding: 0 16px; }
+    .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    
+    .stat-box-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .stat-box { background: #f8f9fa; padding: 16px; border-radius: 10px; text-align: center; border: 1px solid #e9ecef; }
+    .stat-box span { display: block; font-size: 0.85rem; color: #666; margin-bottom: 6px; }
+    .stat-box strong { font-size: 1.4rem; color: var(--primary); }
+
+    .stats-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95rem; text-align: left; }
+    .stats-table th, .stats-table td { padding: 12px 14px; border-bottom: 1px solid #eee; }
+    .stats-table th { background: #f8f9fa; color: var(--primary); }
+    .badge-mode { background: #e8f5e9; color: #2b9348; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
+    <button class="menu-toggle" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="navLinks">☰</button>
+    <div class="nav-links" id="navLinks">
+      <a href="../system/index.html">ระบบประมูล</a>
+      <a href="../learn/counting.html">นับไพ่</a>
+      <a href="index.html">ฝึกประมูล</a>
+      <a href="../analyzer/hand.html">วิเคราะห์</a>
+      
+      <div id="authNavContainer" class="user-menu-container">
+        <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
+        <div class="user-dropdown-content">
+          <a href="my-stats.html">📊 สถิติตัวเอง</a>
+          <a href="#" onclick="logoutUser(); return false;">🚪 ออกจากระบบ</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="stats-container">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: var(--primary);">📊 สถิติส่วนตัวเชิงลึก</h2>
+        <a href="index.html" class="btn" style="background: #e9ecef; color: #333; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 0.9rem;">← กลับไปหน้าฝึกซ้อม</a>
+      </div>
+
+      <div id="loadingBox" style="text-align: center; padding: 30px; color: #666;">กำลังโหลดข้อมูลของคุณ...</div>
+      
+      <div id="contentBox" class="hidden">
+        <div class="stat-box-container">
+          <div class="stat-box"><span>จำนวนรอบที่ฝึกทั้งหมด</span><strong id="lblTotalGames">0 รอบ</strong></div>
+          <div class="stat-box"><span>คะแนนเฉลี่ยรวม</span><strong id="lblAvgScore">0 / 20</strong></div>
+          <div class="stat-box"><span>อัตราตอบถูกรวม</span><strong id="lblAccuracy">0%</strong></div>
+        </div>
+
+        <h3 style="margin-top: 30px; color: var(--primary);">🕒 ประวัติการฝึกซ้อมรายรอบ (ย้อนหลัง)</h3>
+        <div style="overflow-x: auto;">
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>ลำดับ / วันที่</th>
+                <th>หมวดหมู่</th>
+                <th>คะแนนที่ได้</th>
+                <th>เวลารวม</th>
+                <th>เฉลี่ยต่อข้อ</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- ข้อมูลจะถูกเติมด้วย JavaScript เฉพาะของ User นี้เท่านั้น -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://oedgolwpnxuhsuulohyy.supabase.co';
+    const SUPABASE_KEY = 'วาง_PUBLISHABLE_KEY_จริงตรงนี้'; // ใช้คีย์เดียวกันกับหน้าอื่น
+
+    let _supabase = null;
+    try {
+      if (window.supabase && !SUPABASE_KEY.startsWith('วาง_')) {
+        _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch(e) { console.error("Supabase init error:", e); }
+
+    const isLoggedIn = () => localStorage.getItem('bridge_user_logged') === 'true';
+    const currentUser = () => (localStorage.getItem('bridge_user_name') || '').trim();
+
+    function logoutUser() {
+      if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+        localStorage.removeItem('bridge_user_logged');
+        localStorage.removeItem('bridge_user_name');
+        window.location.href = '../index.html';
+      }
+    }
+
+    async function loadMyDetailedStats() {
+      const loading = document.getElementById('loadingBox');
+      const content = document.getElementById('contentBox');
+
+      if (!isLoggedIn()) {
+        loading.innerHTML = 'กรุณา <a href="../login.html" style="color:var(--primary); font-weight:bold;">เข้าสู่ระบบ</a> ก่อนดูสถิติส่วนตัว';
+        return;
+      }
+
+      if (!_supabase) {
+        loading.innerHTML = '<span style="color:red;">❌ ยังไม่ได้ใส่คีย์ Supabase ในไฟล์ my-stats.html</span>';
+        return;
+      }
+
+      const username = currentUser();
+
+      // ดึงข้อมูลเฉพาะของ username นี้เท่านั้น (ปลอดภัย เป็นส่วนตัว ไม่ปะปนกับใคร)
+      let { data, error } = await _supabase
+        .from('practice_history')
+        .select('*')
+        .eq('username', username)
+        .order('id', { ascending: false });
+
+      if (error) {
+        loading.innerHTML = `<span style="color:red;">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${error.message}</span>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        loading.innerHTML = 'ยังไม่มีประวัติการฝึกซ้อม ไปเริ่มฝึกซ้อมกันเลย! <br><br><a href="index.html" class="btn btn-primary" style="text-decoration:none; padding:8px 16px; border-radius:6px; color:#fff;">ไปหน้าฝึกซ้อม</a>';
+        return;
+      }
+
+      loading.classList.add('hidden');
+      content.classList.remove('hidden');
+
+      // คำนวณสถิติภาพรวม
+      let totalGames = data.length;
+      let totalScore = data.reduce((acc, curr) => acc + curr.score, 0);
+      let avgScore = (totalScore / totalGames).toFixed(1);
+      let accuracy = ((totalScore / (totalGames * 20)) * 100).toFixed(1);
+
+      document.getElementById('lblTotalGames').textContent = `${totalGames} รอบ`;
+      document.getElementById('lblAvgScore').textContent = `${avgScore} / 20`;
+      document.getElementById('lblAccuracy').textContent = `${accuracy}%`;
+
+      // เติมตารางประวัติย้อนหลัง
+      let tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+      data.forEach((h, idx) => {
+        let dateStr = h.created_at ? new Date(h.created_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : 'เร็วๆนี้';
+        let modeName = h.mode === 'opening' ? 'Opening' : (h.mode === 'response_1c' ? 'Response 1C' : h.mode);
+        
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>#${data.length - idx} <br><small style="color:#888;">${dateStr}</small></td>
+          <td><span class="badge-mode">${modeName}</span></td>
+          <td><strong>${h.score} / 20</strong> (${Math.round((h.score/20)*100)}%)</td>
+          <td>${h.time_str}</td>
+          <td>${h.avg_time}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const authContainer = document.getElementById('authNavContainer');
+      const authBtn = document.getElementById('authNavBtn');
+
+      if (isLoggedIn()) {
+        authBtn.textContent = `👤 ${currentUser() || 'สมาชิก'} ▾`;
+        authBtn.href = '#';
+        authBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          authContainer.classList.toggle('active');
+        };
+        window.addEventListener('click', () => {
+          authContainer.classList.remove('active');
+        });
+      }
+
+      loadMyDetailedStats();
+    });
+  </script>
+</body>
+</html>
