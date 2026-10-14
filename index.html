@@ -68,15 +68,22 @@
 </head>
 <body class="is-guest">
 
-  <nav class="navbar">
-    <a href="index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
+    <nav class="navbar">
+    <a href="../index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
     <button class="menu-toggle" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="navLinks">☰</button>
     <div class="nav-links" id="navLinks">
-      <a href="system/index.html">ระบบประมูล</a>
-      <a href="learn/counting.html">นับไพ่</a>
-      <a href="practice/index.html">ฝึกประมูล</a>
-      <a href="analyzer/hand.html" id="navAnalyzer">วิเคราะห์</a>
-      <a href="login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
+      <a href="../system/index.html">ระบบประมูล</a>
+      <a href="../learn/counting.html">นับไพ่</a>
+      <a href="../practice/index.html" aria-current="page" class="active">ฝึกประมูล</a>
+      <a href="../analyzer/hand.html">วิเคราะห์</a>
+      
+      <div id="authNavContainer" class="user-menu-container">
+        <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
+        <div class="user-dropdown-content">
+          <a href="#" onclick="goToMyStats(); return false;">📊 สถิติตัวเอง</a>
+          <a href="#" onclick="logoutUser(); return false;">🚪 ออกจากระบบ</a>
+        </div>
+      </div>
     </div>
   </nav>
 
