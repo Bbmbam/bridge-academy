@@ -77,6 +77,12 @@
           <button class="filter-btn active" onclick="filterStats('all', this)">รวมทุกหมวดหมู่</button>
           <button class="filter-btn" onclick="filterStats('opening', this)">Opening</button>
           <button class="filter-btn" onclick="filterStats('response_1c', this)">Response 1C</button>
+          <button class="filter-btn" onclick="filterStats('response_1d', this)">Response 1D</button>
+          <button class="filter-btn" onclick="filterStats('response_1h', this)">Response 1H</button>
+          <button class="filter-btn" onclick="filterStats('response_1s', this)">Response 1S</button>
+          <button class="filter-btn" onclick="filterStats('response_1nt', this)">Response 1NT</button>
+          <button class="filter-btn" onclick="filterStats('opener_rebid_1c', this)">Opener 1C Rebid</button>
+          <button class="filter-btn" onclick="filterStats('opener_rebid_1d', this)">Opener 1D Rebid</button>
         </div>
 
         <!-- 4 กล่องสถิติ -->
@@ -108,11 +114,22 @@
 
   <script>
     const SUPABASE_URL = 'https://oedgolwpnxuhsuulohyy.supabase.co';
-    const SUPABASE_KEY = 'วาง_PUBLISHABLE_KEY_จริงตรงนี้'; // ใช้คีย์จริง
+    const SUPABASE_KEY = 'sb_publishable_bzBvrmkMZIvV5XRU1v_jDg__lRpzlXA';
+
+    const MODE_LABELS = {
+      opening: 'Opening',
+      response_1c: 'Response 1C',
+      response_1d: 'Response 1D',
+      response_1h: 'Response 1H',
+      response_1s: 'Response 1S',
+      response_1nt: 'Response 1NT',
+      opener_rebid_1c: 'Opener 1C Rebid',
+      opener_rebid_1d: 'Opener 1D Rebid'
+    };
 
     let _supabase = null;
     try {
-      if (window.supabase && !SUPABASE_KEY.startsWith('วาง_')) {
+      if (window.supabase) {
         _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
     } catch(e) { console.error("Supabase init error:", e); }
@@ -122,6 +139,7 @@
 
     const isLoggedIn = () => localStorage.getItem('bridge_user_logged') === 'true';
     const currentUser = () => (localStorage.getItem('bridge_user_name') || '').trim();
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
     function logoutUser() {
       if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
@@ -141,7 +159,7 @@
       }
 
       if (!_supabase) {
-        loading.innerHTML = '<span style="color:red;">❌ ยังไม่ได้ใส่คีย์ Supabase ในไฟล์ my-stats.html</span>';
+        loading.innerHTML = '<span style="color:red;">❌ ไม่สามารถเชื่อมต่อ Supabase ได้</span>';
         return;
       }
 
@@ -152,7 +170,7 @@
         .order('id', { ascending: false });
 
       if (error) {
-        loading.innerHTML = `<span style="color:red;">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${error.message}</span>`;
+        loading.innerHTML = `<span style="color:red;">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${esc(error.message)}</span>`;
         return;
       }
 
@@ -198,7 +216,6 @@
       let avgScore = (totalScore / totalGames).toFixed(1);
       let accuracy = ((totalScore / (totalGames * 20)) * 100).toFixed(1);
 
-      // คำนวณเวลาเฉลี่ยต่อข้อรวมจากเวลา sec ทั้งหมด
       let totalSecSum = filteredData.reduce((acc, curr) => acc + (curr.time_sec || 0), 0);
       let overallAvgSecPerQ = (totalSecSum / (totalGames * 20)).toFixed(1);
 
@@ -209,15 +226,15 @@
 
       filteredData.forEach((h, idx) => {
         let dateStr = h.created_at ? new Date(h.created_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : 'เร็วๆนี้';
-        let modeName = h.mode === 'opening' ? 'Opening' : (h.mode === 'response_1c' ? 'Response 1C' : h.mode);
+        let modeName = MODE_LABELS[h.mode] || h.mode;
         
         let tr = document.createElement('tr');
         tr.innerHTML = `
           <td>#${filteredData.length - idx} <br><small style="color:#888;">${dateStr}</small></td>
-          <td><span class="badge-mode">${modeName}</span></td>
+          <td><span class="badge-mode">${esc(modeName)}</span></td>
           <td><strong>${h.score} / 20</strong> (${Math.round((h.score/20)*100)}%)</td>
-          <td>${h.time_str}</td>
-          <td>${h.avg_time}</td>
+          <td>${esc(h.time_str)}</td>
+          <td>${esc(h.avg_time)}</td>
         `;
         tbody.appendChild(tr);
       });
