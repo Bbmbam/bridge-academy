@@ -4,49 +4,147 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1b4332">
-  <title>ฝึกประมูล Shape Before Strength - Bridge Classroom</title>
+  <title>ระบบประมูล Shape Before Strength - Bridge Classroom</title>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
-  
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/dss-engine.js" defer></script>
-  <script src="cheatsheets.js" defer></script>
   <style>
-    :root {
-      --primary-dark: #112d21;
-      --card-bg: #113825;
-    }
-    body { font-family: 'Sarabun', sans-serif; background: #f4f7f5; margin: 0; color: #333; }
-    
-    .navbar .nav-links a {
-      color: #ffffff !important;
-      opacity: 0.9;
-      text-decoration: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      transition: background 0.2s;
-    }
-    .navbar .nav-links a:hover {
-      opacity: 1;
-      background: rgba(255, 255, 255, 0.1);
+    .learn-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      align-items: start;
     }
     
-    .navbar .nav-links a[aria-current="page"],
-    .navbar .nav-links a.active {
-      background: rgba(255, 255, 255, 0.2) !important;
-      color: #ffffff !important;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-weight: bold;
-      opacity: 1;
+    .desktop-toc { display: none; }
+    @media (min-width: 900px) {
+      .learn-layout { grid-template-columns: 280px 1fr; }
+      .desktop-toc { display: block; position: sticky; top: 80px; align-self: start; }
     }
 
-    /* แก้ไขดรอปดาวน์ให้ตัวหนังสือมองเห็นชัดเจน (บังคับสีดำ) */
+    .toc-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.05);
+      border-top: 4px solid var(--primary);
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+    }
+    .toc-card h3 {
+      font-size: 1rem;
+      color: var(--primary);
+      margin: 0 0 10px 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #eee;
+    }
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .toc-list a {
+      display: block;
+      padding: 5px 8px;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: background 0.2s, color 0.2s;
+    }
+    .toc-list a:hover {
+      background: var(--accent-light);
+      color: var(--secondary);
+    }
+    .toc-sub {
+      padding-left: 12px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .mobile-toc-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 18px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 0.95rem;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      cursor: pointer;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    @media (min-width: 900px) { .mobile-toc-btn { display: none; } }
+
+    .toc-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .toc-modal.active { opacity: 1; visibility: visible; }
+    .toc-modal-content {
+      background: #fff;
+      width: 100%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border-radius: 20px 20px 0 0;
+      padding: 20px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+      transform: translateY(100%);
+      transition: transform 0.3s ease-out;
+    }
+    .toc-modal.active .toc-modal-content { transform: translateY(0); }
+    .toc-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+    .toc-close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); }
+
+    table.guide-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #212529; font-size: 0.95rem; }
+    table.guide-table th, table.guide-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
+    table.guide-table th { background: var(--primary); color: #fff; }
+
+    .rule-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border-left: 5px solid var(--primary);
+    }
+    .rule-card h2 { color: var(--primary); margin-top: 0; font-size: 1.3rem; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .rule-card h3 { color: var(--secondary); font-size: 1.05rem; margin-top: 16px; }
+    p, li { line-height: 1.6; font-size: 0.95rem; }
+
+    /* สไตล์ดรอปดาวน์ขวาบน */
     .user-menu-container { position: relative; display: inline-block; }
     .user-dropdown-content {
       display: none;
       position: absolute;
       right: 0;
+      top: 110%;
       background-color: #ffffff !important;
       min-width: 170px;
       box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
@@ -54,16 +152,13 @@
       z-index: 1000;
       overflow: hidden;
     }
-    .user-dropdown-content a, 
-    .user-dropdown-content a:link, 
-    .user-dropdown-content a:visited {
+    .user-dropdown-content a {
       color: #111111 !important;
       padding: 12px 16px;
       text-decoration: none;
       display: block;
       font-size: 0.95rem;
       background-color: #ffffff !important;
-      opacity: 1 !important;
     }
     .user-dropdown-content a:hover { 
       background-color: #f1f1f1 !important; 
@@ -71,652 +166,211 @@
     }
     .user-menu-container.active .user-dropdown-content { display: block; }
 
-    .practice-container { max-width: 1200px; margin: 30px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
-    @media(max-width: 900px) { .practice-container { grid-template-columns: 1fr; } }
-
-    .menu-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-    .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
-    .menu-btn { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 18px; text-align: left; cursor: pointer; transition: all 0.2s; font-family: 'Sarabun'; font-size: 1rem; font-weight: bold; color: var(--primary); }
-    .menu-btn:hover:not(.disabled) { background: var(--accent-light); border-color: var(--primary); transform: translateY(-2px); }
-    .menu-btn.disabled { opacity: 0.4; cursor: not-allowed; background: #e9ecef; color: #6c757d; }
-    
-    .sub-menu-container { margin-top: 10px; display: none; padding-left: 15px; border-left: 3px solid var(--primary); }
-
-    .quiz-box { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-    .quiz-header { display: flex; justify-content: space-between; align-items: center; background: #e9ecef; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-weight: bold; font-size: 0.9rem; flex-wrap: wrap; gap: 8px; }
-    
-    .hand-display-box { background: var(--card-bg); border-radius: 12px; padding: 20px; color: #fff; margin-bottom: 20px; position: relative; min-height: 180px; }
-    .classic-card-row { display: flex; align-items: center; margin: 12px 0; font-size: 1.1rem; }
-    .classic-suit-icon { width: 30px; font-size: 1.3rem; text-align: center; font-weight: bold; }
-    
-    .suit-s { color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
-    .suit-c { color: #52b788; }
-    .suit-h, .suit-d { color: #ff6b6b; }
-    
-    .classic-cards { display: flex; position: relative; height: 55px; margin-left: 10px; flex: 1; overflow-x: auto; align-items: center; }
-    .playing-card { background: #fff; color: #111; width: 36px; height: 50px; border-radius: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; font-size: 0.95rem; box-shadow: -2px 2px 6px rgba(0,0,0,0.4); position: absolute; border: 1px solid #ccc; transition: transform 0.2s; z-index: 2; }
-    .playing-card:hover { z-index: 20 !important; transform: translateY(-5px); }
-    .playing-card.red { color: #d90429; }
-    .playing-card.black { color: #111111; }
-
-    .hand-controls { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 25; }
-    .action-badge-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.6); color: #fff; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-family: 'Sarabun'; font-weight: bold; }
-    .action-badge-btn:hover { background: rgba(0,0,0,0.7); }
-
-    .bidding-box { background: #112d21; border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 20px; }
-    .bid-levels, .bid-suits { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-    .bid-btn { background: #fff; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'Sarabun'; transition: 0.1s; font-size: 1rem; color: #111; }
-    .bid-btn:hover { background: var(--accent-light); }
-    .bid-btn.selected { background: #ffb703 !important; color: #000 !important; }
-
-    .cheat-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
-    .cheat-card h4 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-    .cheat-body { font-size: 0.9rem; line-height: 1.6; max-height: 400px; overflow-y: auto; }
-    .cheat-body ul { padding-left: 18px; margin: 0; }
-
-    .feedback-alert { padding: 15px; border-radius: 8px; font-weight: bold; margin-top: 15px; text-align: center; animation: fadeIn 0.3s; }
-    .feedback-correct { background: #d8f3dc; color: #1b4332; border: 1px solid #52b788; }
-    .feedback-wrong { background: #ffe3e3; color: #9b2226; border: 1px solid #e56b6f; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-    .pause-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #fff; display: none; text-align: center; padding: 20px; }
-    
-    .stats-table, .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95rem; text-align: left; }
-    .stats-table th, .stats-table td, .leaderboard-table th, .leaderboard-table td { padding: 10px; border-bottom: 1px solid #eee; }
-    .stats-table th, .leaderboard-table th { background: #f8f9fa; color: var(--primary); }
-
-    .stat-box-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
-    .stat-box { background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #e9ecef; }
-    .stat-box span { display: block; font-size: 0.8rem; color: #666; margin-bottom: 4px; }
-    .stat-box strong { font-size: 1.2rem; color: var(--primary); }
-    
-    .hidden { display: none !important; }
+    html { scroll-behavior: smooth; }
   </style>
 </head>
 <body>
 
-  <!-- Navbar -->
   <nav class="navbar">
     <a href="../index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
     <button class="menu-toggle" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="navLinks">☰</button>
     <div class="nav-links" id="navLinks">
-      <a href="../system/index.html">ระบบประมูล</a>
+      <a href="index.html" aria-current="page" class="active">ระบบประมูล</a>
       <a href="../learn/counting.html">นับไพ่</a>
-      <a href="index.html" aria-current="page" class="active">ฝึกประมูล</a>
+      <a href="../practice/index.html">ฝึกประมูล</a>
       <a href="../analyzer/hand.html">วิเคราะห์</a>
       
       <div id="authNavContainer" class="user-menu-container">
         <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
-        <div class="user-dropdown-content" id="userDropdown">
-          <a href="#" onclick="showMyStatsModal(); return false;">📊 สถิติตัวเอง</a>
+        <div class="user-dropdown-content">
+          <a href="../practice/index.html">📊 สถิติตัวเอง</a>
           <a href="#" onclick="logoutUser(); return false;">🚪 ออกจากระบบ</a>
         </div>
       </div>
     </div>
   </nav>
 
-  <div class="practice-container">
+  <main class="container" style="margin-top: 30px; margin-bottom: 40px;">
     
-    <main>
+    <div class="rule-card" style="border-left-color: var(--secondary); background: #f4f9f5; margin-bottom: 20px;">
+      <h2 style="color: var(--secondary); border: none; margin-bottom: 5px;">📘 ระบบประมูล Shape Before Strength (DSS)</h2>
+      <p style="margin: 0; color: #555;">คู่มือและผังกลยุทธ์การประมูลระดับแข่งขัน เจาะลึกหลักการ Transfer First และการอ่านรูปทรงไพ่ก่อนความหนาของแต้ม</p>
+    </div>
+
+    <div class="learn-layout">
       
-      <div id="menuView" class="menu-card">
-        <h2>🎯 หน้าเลือกเมนูแบบฝึกหัด Shape Before Strength</h2>
-        <p style="color: #666;">เลือกหัวข้อแบบฝึกหัดที่คุณต้องการฝึกซ้อม (ชุดละ 20 ข้อ):</p>
+      <aside class="desktop-toc">
+        <nav class="toc-card" aria-label="สารบัญบทเรียน">
+          <h3>📑 สารบัญเนื้อหา</h3>
+          <ul class="toc-list">
+            <li><a href="#sec-rule">1. Fundamental Rules</a></li>
+            <li><a href="#sec-open" class="toc-sub">2. Opening Structure</a></li>
+            <li><a href="#sec-resp1c" class="toc-sub">3. Responding to 1♣</a></li>
+            <li><a href="#sec-core" class="toc-sub">4. Core Engine</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <div>
         
-        <div class="menu-grid">
-          <div>
-            <button class="menu-btn" onclick="startPractice('opening')">♠ ฝึกเปิด (Opening)</button>
-          </div>
-          <div>
-            <button class="menu-btn" onclick="toggleSubMenu('responseSub')">♥ ฝึก Response ▾</button>
-            <div id="responseSub" class="sub-menu-container">
-              <button class="menu-btn" style="width:100%; margin-top:6px; padding:10px;" onclick="startPractice('response_1c')">Response 1C</button>
-              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1D (เร็วๆนี้)</button>
-              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1H (เร็วๆนี้)</button>
-              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1S (เร็วๆนี้)</button>
-              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1N (เร็วๆนี้)</button>
-            </div>
-          </div>
-          <div>
-            <button class="menu-btn disabled">♦ Opener Rebid (ปิดใช้งาน)</button>
-          </div>
-          <div>
-            <button class="menu-btn disabled">♣ Responder Rebid (ปิดใช้งาน)</button>
-          </div>
-        </div>
-
-        <!-- ลีดเดอร์บอร์ดและสถิติภาพรวมแยกตามหมวดหมู่ -->
-        <div id="memberDashboard" class="hidden" style="margin-top: 35px; border-top: 2px dashed #eee; padding-top: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-            <h3 style="margin: 0;">🏆 สถิติและลีดเดอร์บอร์ด</h3>
-            <div style="display: flex; gap: 6px;" id="modeButtonsGroup">
-              <button class="btn mode-tab-btn" id="btn_opening" style="background:var(--primary); color:#fff; padding:6px 14px; font-size:0.85rem;" onclick="switchDashboardMode('opening')">Opening</button>
-              <button class="btn mode-tab-btn" id="btn_response_1c" style="background:#e9ecef; color:#333; padding:6px 14px; font-size:0.85rem;" onclick="switchDashboardMode('response_1c')">Response 1C</button>
-            </div>
-          </div>
-
-          <!-- สถิติส่วนตัวของผู้ใช้ในหมวดนั้นๆ -->
-          <div id="userPersonalSummary" style="margin-bottom: 20px;"></div>
-
-          <!-- ตาราง 5 อันดับแรก (Top 5 Leaderboard) -->
-          <h4 style="margin: 10px 0 5px 0; color: var(--primary);">🥇 5 อันดับแรก (Top Leaderboard)</h4>
-          <div id="leaderboardContent">กำลังโหลดข้อมูล...</div>
-        </div>
-      </div>
-
-      <div id="quizView" class="quiz-box hidden">
-        <div class="quiz-header">
-          <span id="quizTitle">หมวดหมู่: OPENING</span>
-          <span id="quizProgress">ข้อที่: 1 / 20</span>
-          <span id="quizTimer">⏱ เวลา: 00:00</span>
-          <span id="quizScore">ถูก: 0/0</span>
-          <button class="btn" style="background:#dc2f02; color:#fff; padding:6px 12px; font-size:0.9rem;" onclick="pausePractice()" type="button">⏸ พัก (Pause)</button>
-        </div>
-
-        <div class="hand-display-box" id="handBox">
-          <div class="hand-controls">
-            <button class="action-badge-btn" onclick="toggleCardView()" id="viewToggleBtn" type="button">🔄 มุมมองแบดจ์</button>
-            <button class="action-badge-btn" onclick="toggleSound()" id="soundToggleBtn" type="button">🔊 เปิดเสียง</button>
-          </div>
-          <div style="font-size: 0.95rem; margin-bottom: 12px; opacity: 0.9;" id="questionPrompt">คุณเป็นผู้เปิดประมูลคนแรก (Dealer) จะประมูลอะไร?</div>
+        <section id="sec-rule" class="rule-card" style="scroll-margin-top: 80px;">
+          <h2>1. Fundamental Rules of the System</h2>
           
-          <div id="cardRenderArea"></div>
+          <h3>Rule 1: Transfer First</h3>
+          <p>เมื่อมีโอกาสใช้ Transfer ให้ใช้ Transfer ก่อน</p>
+          <p><strong>เหตุผล:</strong> หา Major Fit ได้เร็ว / เก็บพื้นที่ประมูล / ซ่อนมือคนเปิด</p>
+
+          <h3>Rule 2: Shape Before Strength</h3>
+          <p>ก่อนถามแต้มให้หารูปไพ่ก่อน</p>
+          <p><strong>ลำดับข้อมูล:</strong> Fit → Shape → Shortness → Control → Strength</p>
+          <p><em>ดังนั้น Game Force Relay ไม่ใช่ถามแต้ม แต่ถาม Shape</em></p>
+
+          <h3>Rule 3: Strong Hands Speak</h3>
+          <p>มือขั้นต่ำประมูลธรรมชาติ มือที่มี 16+ HCP จะมี Core Engine ในการแสดงพลัง</p>
+
+          <h3>Rule 4: Ask Before Guessing</h3>
+          <p>ห้ามเดา ถ้ายังมีพื้นที่ประมูล ให้ถามก่อน จึงเกิด:</p>
+          <ul>
+            <li>Shape Relay</li>
+            <li>Transfer Checkback</li>
+            <li>Shape Stayman</li>
+          </ul>
+
+          <h3>Rule 5: Find Fit Before Game</h3>
+          <p>เกมจะตัดสินหลังรู้ Fit แล้ว ไม่ใช่หลังนับแต้ม</p>
+          <p><strong>ตัวอย่าง:</strong> 15 + 10 = 25 ไม่จำเป็นต้องได้เกมเสมอ และ 14 + 9 = 23 บางครั้งก็ได้เกม ถ้า Shape ดี</p>
+        </section>
+
+        <section id="sec-open" class="rule-card" style="scroll-margin-top: 80px;">
+          <h2>2. Opening Structure</h2>
+          <table class="guide-table">
+            <tr><th>Open</th><th>Detail</th></tr>
+            <tr><td><strong>Pass</strong></td><td>Normal 0-10</td></tr>
+            <tr><td><strong>1♣</strong></td><td>11-20 ♣2+ IF BAL NOT PROMISE LONGER SUIT EX (5332), (4432)</td></tr>
+            <tr><td><strong>1♦</strong></td><td>11-20 UNBAL ♦4+</td></tr>
+            <tr><td><strong>1♥</strong></td><td>11-20 ♥5 no 5332 except 17+</td></tr>
+            <tr><td><strong>1♠</strong></td><td>11-20 ♠5 no 5332 except 17+</td></tr>
+            <tr><td><strong>1NT</strong></td><td>14-16 Balance, 6m, 5M, Singleton OK</td></tr>
+            <tr><td><strong>2♣</strong></td><td>21+ or 8.5 playing tricks</td></tr>
+            <tr><td><strong>2♦</strong></td><td>1. Weak 1M<br>2. 17+ 2M 55</td></tr>
+            <tr><td><strong>2♥</strong></td><td>11-13 ♥6 can be 9-10 when ♥ 2 top + A/K outside or ♥7 + K outside</td></tr>
+            <tr><td><strong>2♠</strong></td><td>11-13 ♠6 can be 9-10 when ♠ 2 top + A/K outside or ♠7 + K outside</td></tr>
+            <tr><td><strong>2NT</strong></td><td>20-22 Bal 5M ok</td></tr>
+            <tr><td><strong>3♣ / 3♦</strong></td><td>Pre-emptive ♣6 / ♦6</td></tr>
+            <tr><td><strong>3♥ / 3♠</strong></td><td>Pre-emptive ♥7 / ♠7</td></tr>
+            <tr><td><strong>3NT</strong></td><td>Solid Major 7+</td></tr>
+            <tr><td><strong>4♣ / 4♦ / 4♥ / 4♠</strong></td><td>Pre-emptive Level 4</td></tr>
+          </table>
+        </section>
+
+        <section id="sec-resp1c" class="rule-card" style="scroll-margin-top: 80px;">
+          <h2>3. Responding to 1♣ opening</h2>
+          <p><strong>นิยาม:</strong> 11-13 Balance open 1♣ | 17-19 Balance open 1♣ except M5 | 11-20 ♣4+ unbalance</p>
           
-          <div style="margin-top: 15px; font-size: 0.85rem; color: #d8f3dc;" id="handMeta">แต้ม: 0 HCP | ทรงไพ่: 0000</div>
-        </div>
+          <table class="guide-table">
+            <tr><th>Response Bid</th><th>Meaning</th></tr>
+            <tr><td>1♦</td><td>Transfer ♥4+</td></tr>
+            <tr><td>1♥</td><td>Transfer ♠4+</td></tr>
+            <tr><td>1♠</td><td>0-10 no M4, no void, no 6m</td></tr>
+            <tr><td>1NT</td><td>Game Force no M5</td></tr>
+            <tr><td>2♣</td><td>Transfer ♦6</td></tr>
+            <tr><td>2♦</td><td>Game Invitation ♣5+</td></tr>
+            <tr><td>2♥</td><td>Game Invitation Bal</td></tr>
+            <tr><td>2♠ / 2NT</td><td>Blank</td></tr>
+            <tr><td>3♣</td><td>NF ♣6</td></tr>
+            <tr><td>3♦</td><td>GF BAL NO 4M [NOT GOOD FOR NT]</td></tr>
+          </table>
 
-        <div class="bidding-box">
-          <div style="color: #d8f3dc; margin-bottom: 8px; font-size: 0.9rem;" id="biddingInstruction">เลือกเลเวลการประมูลของคุณ:</div>
-          <div class="bid-levels">
-            <button class="bid-btn" onclick="selectBid('Pass', this)" type="button">Pass</button>
-            <button class="bid-btn" onclick="selectBid('1', this)" type="button">1</button>
-            <button class="bid-btn" onclick="selectBid('2', this)" type="button">2</button>
-            <button class="bid-btn" onclick="selectBid('3', this)" type="button">3</button>
-            <button class="bid-btn" onclick="selectBid('4', this)" type="button">4</button>
-            <button class="bid-btn" onclick="selectBid('5', this)" type="button">5</button>
-            <button class="bid-btn" onclick="selectBid('6', this)" type="button">6</button>
-            <button class="bid-btn" onclick="selectBid('7', this)" type="button">7</button>
-          </div>
+          <h3>A. Transfer response to Majors</h3>
+          <p>1♣-1♦ (Transfer ♥) และ 1♣-1♥ (Transfer ♠)<br>Opener ถามตัวเองเพียง 2 ข้อ: มี Support หรือไม่? มี Extra Values หรือไม่?</p>
           
-          <div class="bid-suits hidden" id="suitSelectionArea" style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 10px;">
-            <button class="bid-btn suit-c" onclick="selectSuit('♣', this)" type="button">♣</button>
-            <button class="bid-btn suit-d" onclick="selectSuit('♦', this)" type="button">♦</button>
-            <button class="bid-btn suit-h" onclick="selectSuit('♥', this)" type="button">♥</button>
-            <button class="bid-btn suit-s" onclick="selectSuit('♠', this)" type="button">♠</button>
-            <button class="bid-btn" onclick="selectSuit('NT', this)" type="button">NT</button>
-          </div>
-          <div style="margin-top: 12px;">
-            <span id="selectedAnswerDisplay" style="font-size: 1.1rem; font-weight: bold; color: #ffb703; margin-right: 15px;">ยังไม่ได้เลือกคำตอบ</span>
-            <button class="btn btn-primary" onclick="submitAnswer()" id="submitBtn" type="button">ยืนยันคำตอบ</button>
-          </div>
-        </div>
+          <table class="guide-table">
+            <tr><th>Rebid</th><th>Meaning</th></tr>
+            <tr><td>1M</td><td>Accept Transfer</td></tr>
+            <tr><td>1♠</td><td>Minimum Unbalanced</td></tr>
+            <tr><td>1NT</td><td>Strong No-Fit</td></tr>
+            <tr><td>2♣</td><td>Natural Club</td></tr>
+            <tr><td>2M</td><td>Medium Support</td></tr>
+            <tr><td>2M-1</td><td>Strong Fit 3 เป็นตำแหน่งที่แน่นอน</td></tr>
+            <tr><td>2oM or 2M-1</td><td>Strong Fit 4 แปรผันตาม Strong Fit 3</td></tr>
+            <tr><td>2NT</td><td>NT Support</td></tr>
+          </table>
 
-        <div id="feedbackArea" class="hidden"></div>
+          <h3 style="margin-top: 20px;">GAME TRY STRUCTURE</h3>
+          <p>แนวคิด: เมื่อเราเจอทรัมพ์ Major ที่ระดับ 2 บางครั้งรวมกันยังไม่แน่ใจว่าได้ 25+ หรือไม่ ก็ต้องถาม min-max แต่การเอา Honor มาถูกตัวหรือมีชุดสั้น อาจไปเกมด้วยแต้มรวมน้อยกว่า 25 ได้:</p>
+          <ul>
+            <li><strong>2M+1:</strong> asking min max + Honor</li>
+            <li><strong>2NT:</strong> สำหรับทรัมพ์ ♥ จะเป็น short suit ♠</li>
+            <li><strong>3m:</strong> short suit m Game Try</li>
+          </ul>
+
+          <h3 style="margin-top: 20px;">B. Response Negative 1♠</h3>
+          <p><strong>นิยาม:</strong> แต้ม 6-10 ไม่มี M4 และ ไม่มี minor 6+</p>
+
+          <h3 style="margin-top: 20px;">C. Response 1NT Game Force Relay</h3>
+          <p><strong>นิยาม:</strong> ไพ่แต้มเกมต้องการรู้ Shape คนเปิด (1♣ – 1NT)</p>
+
+          <h3 style="margin-top: 20px;">D. Response Level 2</h3>
+          <p><code>2♣ = GI+ ♦5+ or NF ♦6</code> และ <code>2♦ = GI+ ♣5+</code></p>
+        </section>
+
+        <section id="sec-core" class="rule-card" style="scroll-margin-top: 80px;">
+          <h2>4. Core Engine</h2>
+          
+          <h3>1. Transfer Response</h3>
+          <p>ใช้หา Major Fit หลังเปิด 1♣</p>
+
+          <h3>2. Transfer Checkback</h3>
+          <p>ใช้หลังคนเปิด accept transfer 1M or rebid 1♠ เพื่อแยก NF, GI และ GF</p>
+
+          <h3>3. Strong Fit Support</h3>
+          <table class="guide-table">
+            <tr><th>Type</th><th>Shape</th><th>Strength</th></tr>
+            <tr><td>Strong Fit 3</td><td>3-card support unbalanced</td><td>16+</td></tr>
+            <tr><td>Strong Fit 4</td><td>4-card support</td><td>16+</td></tr>
+            <tr><td>NT Fit 4</td><td>4-card support Balanced</td><td>17-19</td></tr>
+          </table>
+
+          <h3>4. Strong No-Fit (Gazilli)</h3>
+          <p>เครื่องมือสำหรับมือแข็งที่ยังไม่พบ Majors Fit</p>
+
+          <h3>5. Game Force Relay</h3>
+          <p>ใช้เมื่อเปิด minor แล้วแต้มเกมแต่ไม่มี M4</p>
+
+          <h3>6. Shape Relay Structure</h3>
+          <p>• Structure 54 และ Structure 6+</p>
+
+          <h3>7. Slam Convention</h3>
+          <p>ROMAN KEY CARDS และ RECYCLE WITH VOID</p>
+        </section>
+
       </div>
+    </div>
+  </main>
 
-      <div id="summaryView" class="quiz-box hidden" style="text-align: center;">
-        <h2>🎉 สรุปผลการฝึกซ้อม</h2>
-        <div id="summaryStats" style="margin: 20px 0; font-size: 1.1rem; line-height: 1.8;"></div>
-        
-        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
-          <button class="btn btn-primary" onclick="retryPractice()" type="button">🔄 ฝึกบทเดิมซ้ำ</button>
-          <button class="btn" style="background:#52b788; color:#fff;" onclick="returnToMenu()" type="button">📂 เลือกฝึกบทอื่น</button>
-          <button class="btn member-only-btn hidden" style="background:#4361ee; color:#fff;" onclick="showMyStatsModal()" type="button">📊 สถิติตัวเอง</button>
-        </div>
+  <button class="mobile-toc-btn" onclick="toggleMobileToc()">
+    📑 สารบัญ
+  </button>
 
-        <div id="myStatsContainer" class="hidden" style="margin-top: 25px; text-align: left; border-top: 1px solid #eee; padding-top: 15px;"></div>
+  <div class="toc-modal" id="tocModal" onclick="if(event.target===this) toggleMobileToc()">
+    <div class="toc-modal-content">
+      <div class="toc-modal-header">
+        <h3 style="margin:0; color:var(--primary);">📑 สารบัญบทเรียน</h3>
+        <button class="toc-close-btn" onclick="toggleMobileToc()">&times;</button>
       </div>
-
-    </main>
-
-    <aside id="cheatSheetSide" class="hidden">
-      <div class="cheat-card">
-        <h4>
-          <span>📌 Cheat Sheet</span>
-          <button class="action-badge-btn" style="background:#1b4332; font-size:0.75rem; padding:4px 10px;" onclick="toggleCheatSheet()" id="cheatToggleBtn" type="button">📂 แสดง</button>
-        </h4>
-        <div class="cheat-body" id="cheatSheetBody" style="display: none;">
-          <div id="cheatSheetContent">
-            <h4>กรุณาเลือกหมวดฝึกซ้อม</h4>
-            <p style="font-size: 0.85rem; color: #666;">คู่มือสรุปกฎจะแสดงที่นี่ตามหมวดที่คุณกำลังฝึก</p>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-  </div>
-
-  <div id="pauseOverlay" class="pause-overlay">
-    <h2>⏸ พักการฝึกซ้อมชั่วคราว</h2>
-    <p style="color: #adb5bd; margin-top: 10px;">หน้าไพ่และเวลาถูกซ่อนไว้เพื่อความยุติธรรม ป้องกันการแอบดูโจทย์</p>
-    <button class="btn btn-primary" style="margin-top: 25px; font-size: 1.1rem; padding: 12px 30px;" onclick="resumePractice()" type="button">▶ ฝึกต่อ (Resume)</button>
+      <ul class="toc-list" style="padding-bottom: 10px;">
+        <li><a href="#sec-rule" onclick="toggleMobileToc()">1. Fundamental Rules</a></li>
+        <li><a href="#sec-open" onclick="toggleMobileToc()">2. Opening Structure</a></li>
+        <li><a href="#sec-resp1c" onclick="toggleMobileToc()">3. Responding to 1♣</a></li>
+        <li><a href="#sec-core" onclick="toggleMobileToc()">4. Core Engine</a></li>
+      </ul>
+    </div>
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://oedgolwpnxuhsuulohyy.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lZGdvbHdwbnh1aHN1dWxvaHl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjM3NDYwNTk1NTgsImV4cCI6MjAzMTYzOTU1OH0.8Z9VlqV8p3Q-Vz4VbW8jX5k9VlqV8p3Q-Vz4VbW8jX5k';
-    
-    let _supabase = null;
-    try {
-      if (typeof supabase !== 'undefined' && SUPABASE_URL) {
-        _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      }
-    } catch(e) { console.error("Supabase init error:", e); }
-
-    let currentMode = '';
-    let currentQuestionIndex = 0;
-    let questionsList = [];
-    let scoreCorrect = 0;
-    let totalAnswered = 0;
-    let secondsElapsed = 0;
-    let timerInterval = null;
-    let isPaused = false;
-    let soundEnabled = true;
-    let selectedCardView = 'classic'; 
-    let cheatSheetVisible = false; 
-    let currentSelectedBid = { level: '', suit: '' };
-    let isAnswerSubmitted = false;
-    let countdownInterval = null;
-    let activeDashboardMode = 'opening';
-
-    function playSound(type) {
-      if (!soundEnabled) return;
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        if (type === 'correct') {
-          osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-          osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
-          gain.gain.setValueAtTime(0.1, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.3);
-        } else {
-          osc.frequency.setValueAtTime(220, ctx.currentTime);
-          osc.frequency.setValueAtTime(150, ctx.currentTime + 0.15);
-          gain.gain.setValueAtTime(0.15, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.35);
-        }
-      } catch(e) {}
-    }
-
-    function toggleSound() {
-      soundEnabled = !soundEnabled;
-      let btn = document.getElementById('soundToggleBtn');
-      btn.textContent = soundEnabled ? '🔊 เปิดเสียง' : '🔇 ปิดเสียง';
-    }
-
-    function toggleCheatSheet() {
-      cheatSheetVisible = !cheatSheetVisible;
-      let body = document.getElementById('cheatSheetBody');
-      let btn = document.getElementById('cheatToggleBtn');
-      body.style.display = cheatSheetVisible ? 'block' : 'none';
-      btn.textContent = cheatSheetVisible ? '📂 ซ่อน' : '📂 แสดง';
-    }
-
-    function toggleSubMenu(id) {
-      let sub = document.getElementById(id);
-      sub.style.display = sub.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function generateQuestions(mode) {
-      let list = [];
-      for (let i = 1; i <= 20; i++) {
-        let handData = DSSEngine.generateRandomHand();
-        let engineRes = openingBid(handData.hcp, handData.shape);
-        let correctBid = engineRes[0];
-        let reasonText = engineRes[1];
-
-        list.push({
-          id: i,
-          hcp: handData.hcp,
-          shape: handData.shape,
-          cards: handData.cards,
-          correct: correctBid,
-          reason: reasonText
-        });
-      }
-      return list;
-    }
-
-    function startPractice(mode) {
-      currentMode = mode;
-      currentQuestionIndex = 0;
-      scoreCorrect = 0;
-      totalAnswered = 0;
-      secondsElapsed = 0;
-      isPaused = false;
-      cheatSheetVisible = false; 
-
-      questionsList = generateQuestions(mode);
-
-      let csContainer = document.getElementById('cheatSheetContent');
-      if (typeof CheatSheetsData !== 'undefined' && CheatSheetsData[mode]) {
-        csContainer.innerHTML = CheatSheetsData[mode];
-      } else {
-        csContainer.innerHTML = CheatSheetsData['default'];
-      }
-
-      document.getElementById('cheatSheetBody').style.display = 'none';
-      document.getElementById('cheatToggleBtn').textContent = '📂 แสดง';
-      document.getElementById('cheatSheetSide').classList.remove('hidden');
-
-      document.getElementById('menuView').classList.add('hidden');
-      document.getElementById('summaryView').classList.add('hidden');
-      document.getElementById('quizView').classList.remove('hidden');
-
-      startTimer();
-      loadQuestion();
-    }
-
-    function retryPractice() {
-      startPractice(currentMode);
-    }
-
-    function startTimer() {
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        if (!isPaused && !isAnswerSubmitted) {
-          secondsElapsed++;
-          let min = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
-          let sec = (secondsElapsed % 60).toString().padStart(2, '0');
-          document.getElementById('quizTimer').textContent = `⏱ เวลา: ${min}:${sec}`;
-        }
-      }, 1000);
-    }
-
-    function pausePractice() {
-      isPaused = true;
-      document.getElementById('pauseOverlay').style.display = 'flex';
-    }
-
-    function resumePractice() {
-      isPaused = false;
-      document.getElementById('pauseOverlay').style.display = 'none';
-    }
-
-    function loadQuestion() {
-      isAnswerSubmitted = false;
-      currentSelectedBid = { level: '', suit: '' };
-      document.getElementById('selectedAnswerDisplay').textContent = 'ยังไม่ได้เลือกคำตอบ';
-      document.getElementById('feedbackArea').classList.add('hidden');
-      document.getElementById('submitBtn').disabled = false;
-      document.getElementById('suitSelectionArea').classList.add('hidden');
-      document.getElementById('biddingInstruction').textContent = 'เลือกเลเวลการประมูลของคุณ:';
-
-      document.querySelectorAll('.bid-levels .bid-btn, .bid-suits .bid-btn').forEach(b => {
-        b.classList.remove('selected');
-      });
-
-      let q = questionsList[currentQuestionIndex];
-      document.getElementById('quizProgress').textContent = `ข้อที่: ${currentQuestionIndex + 1} / 20`;
-      document.getElementById('quizScore').textContent = `ถูก: ${scoreCorrect}/${totalAnswered}`;
-      document.getElementById('handMeta').textContent = `แต้ม: ${q.hcp} HCP | ทรงไพ่: ${q.shape}`;
-
-      renderCards(q.cards);
-    }
-
-    function renderCards(cardsObj) {
-      let area = document.getElementById('cardRenderArea');
-      let suits = [
-        { name: 'Spades', symbol: '♠', key: 's', cls: 'suit-s', isRed: false },
-        { name: 'Hearts', symbol: '♥', key: 'h', cls: 'suit-h', isRed: true },
-        { name: 'Diamonds', symbol: '♦', key: 'd', cls: 'suit-d', isRed: true },
-        { name: 'Clubs', symbol: '♣', key: 'c', cls: 'suit-c', isRed: false }
-      ];
-
-      let html = '';
-      suits.forEach(s => {
-        let arr = cardsObj[s.key] || [];
-        if (selectedCardView === 'classic') {
-          html += `<div class="classic-card-row">
-                    <div class="classic-suit-icon ${s.cls}">${s.symbol}</div>
-                    <div class="classic-cards">`;
-          if (arr.length === 0) {
-            html += `<span style="color:#adb5bd; font-size:0.9rem; font-style:italic; margin-left:5px;">Void (-)</span>`;
-          } else {
-            arr.forEach((c, idx) => {
-              let leftOffset = idx * 24; 
-              let cardColorClass = s.isRed ? 'red' : 'black';
-              html += `<div class="playing-card ${cardColorClass}" style="left: ${leftOffset}px; z-index: ${idx};">
-                        <span style="font-size:0.9rem; line-height:1;">${c}</span>
-                        <span style="font-size:0.8rem; line-height:1;">${s.symbol}</span>
-                       </div>`;
-            });
-          }
-          html += `</div></div>`;
-        } else {
-          html += `<div style="margin:8px 0; font-size:1.1rem;">
-                    <span class="${s.cls}">${s.symbol}</span> : <strong>${arr.join(' ') || 'Void (-)'}</strong>
-                   </div>`;
-        }
-      });
-      area.innerHTML = html;
-    }
-
-    function toggleCardView() {
-      selectedCardView = selectedCardView === 'classic' ? 'badge' : 'classic';
-      document.getElementById('viewToggleBtn').textContent = selectedCardView === 'classic' ? '🔄 มุมมองแบดจ์' : '🃏 มุมมองไพ่จริง';
-      renderCards(questionsList[currentQuestionIndex].cards);
-    }
-
-    function selectBid(lvl, btnElement) {
-      if (isAnswerSubmitted) return;
-      currentSelectedBid.level = lvl;
-      
-      document.querySelectorAll('.bid-levels .bid-btn').forEach(b => b.classList.remove('selected'));
-      btnElement.classList.add('selected');
-
-      if (lvl === 'Pass') {
-        currentSelectedBid.suit = '';
-        document.getElementById('suitSelectionArea').classList.add('hidden');
-      } else {
-        document.getElementById('suitSelectionArea').classList.remove('hidden');
-        document.getElementById('biddingInstruction').textContent = `เลือกดอกไพ่สำหรับเลเวล ${lvl}:`;
-      }
-      updateBidDisplay();
-    }
-
-    function selectSuit(suit, btnElement) {
-      if (isAnswerSubmitted) return;
-      if (!currentSelectedBid.level || currentSelectedBid.level === 'Pass') return;
-      currentSelectedBid.suit = suit;
-
-      document.querySelectorAll('.bid-suits .bid-btn').forEach(b => b.classList.remove('selected'));
-      btnElement.classList.add('selected');
-
-      updateBidDisplay();
-    }
-
-    function updateBidDisplay() {
-      let txt = currentSelectedBid.level === 'Pass' ? 'Pass' : (currentSelectedBid.level + currentSelectedBid.suit);
-      document.getElementById('selectedAnswerDisplay').textContent = txt ? `คำตอบของคุณ: ${txt}` : 'ยังไม่ได้เลือกคำตอบ';
-    }
-
-    function normalizeAnswer(str) {
-      return (str || "").toString().trim().toUpperCase()
-        .replace(/♣/g, 'C')
-        .replace(/♦/g, 'D')
-        .replace(/♥/g, 'H')
-        .replace(/♠/g, 'S')
-        .replace(/NT/g, 'N')
-        .replace(/N\.?T\.?/g, 'N');
-    }
-
-    function submitAnswer() {
-      if (isAnswerSubmitted) return;
-      let userAns = currentSelectedBid.level === 'Pass' ? 'Pass' : (currentSelectedBid.level + currentSelectedBid.suit);
-      if (!userAns || (currentSelectedBid.level !== 'Pass' && !currentSelectedBid.suit)) {
-        alert('กรุณาเลือกเลเวลและดอกไพ่ให้ครบถ้วนครับ');
-        return;
-      }
-
-      isAnswerSubmitted = true;
-      document.getElementById('submitBtn').disabled = true;
-      totalAnswered++;
-
-      let q = questionsList[currentQuestionIndex];
-      let isCorrect = (normalizeAnswer(userAns) === normalizeAnswer(q.correct));
-      
-      let fbArea = document.getElementById('feedbackArea');
-      fbArea.classList.remove('hidden');
-
-      if (isCorrect) {
-        scoreCorrect++;
-        playSound('correct');
-        fbArea.className = `feedback-alert feedback-correct`;
-        fbArea.innerHTML = `✓ ถูกต้อง! ตอบ: ${userAns}<br><span style="font-size:0.9rem; font-weight:normal;">เหตุผล: ${q.reason}</span>`;
-      } else {
-        playSound('wrong');
-        fbArea.className = `feedback-alert feedback-wrong`;
-        fbArea.innerHTML = `✗ ผิดครับ! คำตอบที่ถูกต้องคือ: ${q.correct} (คุณตอบ: ${userAns})<br><span style="font-size:0.9rem; font-weight:normal;">เหตุผล: ${q.reason}</span>`;
-      }
-
-      document.getElementById('quizScore').textContent = `ถูก: ${scoreCorrect}/${totalAnswered}`;
-
-      let countdown = 30;
-      let timerBox = document.createElement('div');
-      timerBox.style.cssText = "margin-top:12px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; color:#555;";
-      timerBox.id = "autoNextContainer";
-      timerBox.innerHTML = `
-        <span id="autoNextTimer">ระบบจะเปลี่ยนข้ออัตโนมัติใน ${countdown} วินาที...</span>
-        <button class="btn btn-primary" style="padding:6px 14px; font-size:0.85rem;" onclick="nextQuestion()" type="button">→ ไปข้อถัดไป</button>
-      `;
-      fbArea.appendChild(timerBox);
-
-      countdownInterval = setInterval(() => {
-        countdown--;
-        if (document.getElementById('autoNextTimer')) {
-          document.getElementById('autoNextTimer').textContent = `ระบบจะเปลี่ยนข้ออัตโนมัติใน ${countdown} วินาที...`;
-        }
-        if (countdown <= 0) {
-          clearInterval(countdownInterval);
-          nextQuestion();
-        }
-      }, 1000);
-    }
-
-    function nextQuestion() {
-      clearInterval(countdownInterval);
-      currentQuestionIndex++;
-      if (currentQuestionIndex < questionsList.length) {
-        loadQuestion();
-      } else {
-        showSummary();
-      }
-    }
-
-    // บันทึกสถิติลง Supabase และตรวจสอบความสำเร็จ
-    async function showSummary() {
-      clearInterval(timerInterval);
-      document.getElementById('quizView').classList.add('hidden');
-      document.getElementById('cheatSheetSide').classList.add('hidden');
-      document.getElementById('summaryView').classList.remove('hidden');
-
-      let min = Math.floor(secondsElapsed / 60);
-      let sec = secondsElapsed % 60;
-      let avgSec = (secondsElapsed / 20).toFixed(1);
-
-      let statsHtml = `
-        ทำถูก: <strong>${scoreCorrect} / 20 ข้อ</strong> (${((scoreCorrect/20)*100).toFixed(0)}%)<br>
-        เวลารวมทั้งหมด: <strong>${min} นาที ${sec} วินาที</strong><br>
-        เวลาเฉลี่ยต่อข้อ: <strong>${avgSec} วินาที/ข้อ</strong>
-      `;
-      document.getElementById('summaryStats').innerHTML = statsHtml;
-
-      const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
-      if (isLogged && _supabase) {
-        const userName = localStorage.getItem('bridge_user_name') || 'สมาชิก';
-        try {
-          let insertData = {
-            username: userName,
-            mode: currentMode,
-            score: scoreCorrect,
-            time_sec: secondsElapsed,
-            time_str: `${min}ม ${sec}ว`,
-            avg_time: `${avgSec}s`
-          };
-          
-          const { error } = await _supabase.from('practice_history').insert([insertData]);
-          if (error) {
-            console.error("Supabase insert error details:", error);
-            alert("บันทึกสถิติไม่สำเร็จ: " + error.message);
-          } else {
-            console.log("Stats successfully recorded to Supabase!");
-            // เปิดปุ่มสถิติตัวเองทันทีเมื่อบันทึกสำเร็จ
-            document.querySelectorAll('.member-only-btn').forEach(b => b.classList.remove('hidden'));
-          }
-        } catch (err) {
-          console.error("Supabase exception:", err);
-        }
-      }
-    }
-
-    async function showMyStats() {
-      let container = document.getElementById('myStatsContainer');
-      container.classList.toggle('hidden');
-      if (container.classList.contains('hidden')) return;
-
-      const userName = localStorage.getItem('bridge_user_name');
-      container.innerHTML = `<p style="color:#666; font-size:0.9rem;">กำลังโหลดข้อมูลสถิติ...</p>`;
-
-      if (!_supabase) {
-        container.innerHTML = `<p style="color:red; font-size:0.9rem;">ไม่ได้เชื่อมต่อ Supabase</p>`;
-        return;
-      }
-
-      try {
-        let { data, error } = await _supabase
-          .from('practice_history')
-          .select('*')
-          .eq('username', userName)
-          .order('id', { ascending: false });
-
-        if (error) {
-          console.error("Fetch error:", error);
-          container.innerHTML = `<p style="color:red; font-size:0.9rem;">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${error.message}</p>`;
-          return;
-        }
-
-        if (!data || data.length === 0) {
-          container.innerHTML = `<p style="color:#666; font-size:0.9rem;">ยังไม่มีประวัติการฝึกซ้อมในระบบ</p>`;
-          return;
-        }
-
-        let totalGames = data.length;
-        let totalScoreSum = data.reduce((acc, curr) => acc + curr.score, 0);
-        let maxPossibleScore = totalGames * 20;
-        let avgAccuracy = ((totalScoreSum / maxPossibleScore) * 100).toFixed(1);
-
-        let html = `<h4>📊 สถิติภาพรวมของคุณ (${userName})</h4>
-                    <div class="stat-box-container">
-                      <div class="stat-box"><span>จำนวนครั้งที่ฝึก</span><strong>${totalGames} รอบ</strong></div>
-                      <div class="stat-box"><span>คะแนนเฉลี่ย</span><strong>${(totalScoreSum/totalGames).toFixed(1)} / 20</strong></div>
-                      <div class="stat-box"><span>อัตราตอบถูก</span><strong>${avgAccuracy}%</strong></div>
-                    </div>
-                    <h5 style="margin:15px 0 5px 0;">ประวัติย้อนหลัง:</h5>
-                    <table class="stats-table">
-                      <tr><th>หมวด</th><th>คะแนน</th><th>เวลาใช้</th><th>เฉลี่ย/ข้อ</th></tr>`;
-        data.slice(0, 5).forEach(h => {
-          html += `<tr><td>${h.mode}</td><td><strong>${h.score}/20</strong></td><td>${h.time_str}</td><td>${h.avg_time}</td></tr>`;
-        });
-        html += `</table>`;
-        container.innerHTML = html;
-      } catch (err) {
-        console.error("Exception:", err);
-        container.innerHTML = `<p style="color:red; font-size:0.9rem;">เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์</p>`;
-      }
-    }
-
-    function showMyStatsModal() {
-      showMyStats();
-      document.getElementById('myStatsContainer').scrollIntoView({ behavior: 'smooth' });
+    function toggleMobileToc() {
+      let modal = document.getElementById('tocModal');
+      modal.classList.toggle('active');
     }
 
     function logoutUser() {
@@ -727,124 +381,23 @@
       }
     }
 
-    function returnToMenu() {
-      document.getElementById('summaryView').classList.add('hidden');
-      document.getElementById('cheatSheetSide').classList.add('hidden');
-      document.getElementById('myStatsContainer').classList.add('hidden');
-      document.getElementById('menuView').classList.remove('hidden');
-      loadDashboardData(activeDashboardMode);
-    }
-
-    function switchDashboardMode(mode) {
-      activeDashboardMode = mode;
-      document.querySelectorAll('.mode-tab-btn').forEach(btn => {
-        btn.style.background = '#e9ecef';
-        btn.style.color = '#333';
-      });
-      let activeBtn = document.getElementById(`btn_${mode}`);
-      if (activeBtn) {
-        activeBtn.style.background = 'var(--primary)';
-        activeBtn.style.color = '#fff';
-      }
-      loadDashboardData(mode);
-    }
-
-    async function loadDashboardData(mode) {
-      let lbContainer = document.getElementById('leaderboardContent');
-      let statsContainer = document.getElementById('userPersonalSummary');
-      
-      if (!lbContainer || !statsContainer) return;
-      lbContainer.innerHTML = `<p style="font-size:0.9rem; color:#666;">กำลังโหลดข้อมูล...</p>`;
-      statsContainer.innerHTML = `<p style="font-size:0.9rem; color:#666;">กำลังโหลดสถิติส่วนตัว...</p>`;
-
-      if (!_supabase) {
-        lbContainer.innerHTML = `<p style="font-size:0.9rem; color:red;">ไม่ได้เชื่อมต่อ Supabase</p>`;
-        return;
-      }
-
-      const userName = localStorage.getItem('bridge_user_name');
-
-      try {
-        let { data: myData } = await _supabase
-          .from('practice_history')
-          .select('*')
-          .eq('username', userName)
-          .eq('mode', mode);
-
-        if (myData && myData.length > 0) {
-          let myGames = myData.length;
-          let myTotalScore = myData.reduce((acc, curr) => acc + curr.score, 0);
-          let myAccuracy = ((myTotalScore / (myGames * 20)) * 100).toFixed(1);
-          let bestScore = Math.max(...myData.map(d => d.score));
-
-          statsContainer.innerHTML = `
-            <div class="stat-box-container">
-              <div class="stat-box"><span>ฝึกในหมวดนี้</span><strong>${myGames} รอบ</strong></div>
-              <div class="stat-box"><span>คะแนนสูงสุด</span><strong>${bestScore}/20</strong></div>
-              <div class="stat-box"><span>อัตราตอบถูก</span><strong>${myAccuracy}%</strong></div>
-            </div>`;
-        } else {
-          statsContainer.innerHTML = `<p style="font-size:0.9rem; color:#666; font-style:italic;">ยังไม่มีประวัติการฝึกในหมวด "${mode}" (เริ่มฝึกเพื่อเก็บสถิติกันเลย!)</p>`;
-        }
-
-        let { data: topData, error } = await _supabase
-          .from('practice_history')
-          .select('username, score, time_sec, time_str')
-          .eq('mode', mode)
-          .order('score', { ascending: false })
-          .order('time_sec', { ascending: true })
-          .limit(5);
-
-        if (error || !topData || topData.length === 0) {
-          lbContainer.innerHTML = `<p style="font-size:0.9rem; color:#666;">ยังไม่มีข้อมูลในลีดเดอร์บอร์ดหมวดนี้</p>`;
-          return;
-        }
-
-        let html = `<table class="leaderboard-table">
-                      <tr><th>อันดับ</th><th>ผู้ใช้</th><th>คะแนน</th><th>เวลา</th></tr>`;
-        topData.forEach((item, index) => {
-          let rankIcon = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `${index+1}`));
-          html += `<tr><td>${rankIcon}</td><td>${item.username}</td><td><strong>${item.score}/20</strong></td><td>${item.time_str}</td></tr>`;
-        });
-        html += `</table>`;
-        lbContainer.innerHTML = html;
-
-      } catch (err) {
-        lbContainer.innerHTML = `<p style="font-size:0.9rem; color:red;">ไม่สามารถโหลดข้อมูลได้</p>`;
-        statsContainer.innerHTML = '';
-      }
-    }
-
     window.addEventListener('DOMContentLoaded', () => {
       const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
       const userName = localStorage.getItem('bridge_user_name');
       const authContainer = document.getElementById('authNavContainer');
       let authBtn = document.getElementById('authNavBtn');
 
-      if (isLogged) {
-        if (authBtn) {
-          authBtn.textContent = `👤 ${userName || 'สมาชิก'} ▾`;
-          authBtn.href = '#';
-          authBtn.onclick = (e) => {
-            e.preventDefault();
-            authContainer.classList.toggle('active');
-          };
-        }
-
-        window.onclick = (e) => {
-          if (authContainer && !authContainer.contains(e.target)) {
-            authContainer.classList.remove('active');
-          }
+      if (isLogged && authBtn) {
+        authBtn.textContent = `👤 ${userName || 'สมาชิก'} ▾`;
+        authBtn.href = '#';
+        authBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          authContainer.classList.toggle('active');
         };
-
-        let dash = document.getElementById('memberDashboard');
-        if (dash) dash.classList.remove('hidden');
-        loadDashboardData('opening');
-      } else {
-        if (authBtn) {
-          authBtn.textContent = 'เข้าสู่ระบบ';
-          authBtn.href = '../login.html';
-        }
+        window.addEventListener('click', () => {
+          authContainer.classList.remove('active');
+        });
       }
     });
   </script>
