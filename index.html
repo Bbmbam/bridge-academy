@@ -64,23 +64,51 @@
     body.is-guest .locked-badge {
       display: inline-block;
     }
+
+    /* สไตล์ดรอปดาวน์โปรไฟล์ขวาบน */
+    .user-menu-container { position: relative; display: inline-block; }
+    .user-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 110%;
+      background-color: #ffffff !important;
+      min-width: 170px;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      z-index: 1000;
+      overflow: hidden;
+    }
+    .user-dropdown-content a {
+      color: #111111 !important;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      font-size: 0.95rem;
+      background-color: #ffffff !important;
+    }
+    .user-dropdown-content a:hover { 
+      background-color: #f1f1f1 !important; 
+      color: var(--primary) !important; 
+    }
+    .user-menu-container.active .user-dropdown-content { display: block; }
   </style>
 </head>
 <body class="is-guest">
 
-    <nav class="navbar">
-    <a href="../index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
+  <nav class="navbar">
+    <a href="index.html" class="logo">♠<span class="red">♥♦</span>♣ Bridge Classroom</a>
     <button class="menu-toggle" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="navLinks">☰</button>
     <div class="nav-links" id="navLinks">
-      <a href="../system/index.html">ระบบประมูล</a>
-      <a href="../learn/counting.html">นับไพ่</a>
-      <a href="../practice/index.html" aria-current="page" class="active">ฝึกประมูล</a>
-      <a href="../analyzer/hand.html">วิเคราะห์</a>
+      <a href="system/index.html">ระบบประมูล</a>
+      <a href="learn/counting.html">นับไพ่</a>
+      <a href="practice/index.html">ฝึกประมูล</a>
+      <a href="analyzer/hand.html">วิเคราะห์</a>
       
       <div id="authNavContainer" class="user-menu-container">
-        <a href="../login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
+        <a href="login.html" class="btn-login" id="authNavBtn">เข้าสู่ระบบ</a>
         <div class="user-dropdown-content">
-          <a href="#" onclick="goToMyStats(); return false;">📊 สถิติตัวเอง</a>
+          <a href="practice/index.html">📊 สถิติตัวเอง</a>
           <a href="#" onclick="logoutUser(); return false;">🚪 ออกจากระบบ</a>
         </div>
       </div>
@@ -279,17 +307,24 @@
       }
     }
 
+    function logoutUser() {
+      if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+        localStorage.removeItem('bridge_user_logged');
+        localStorage.removeItem('bridge_user_name');
+        window.location.reload();
+      }
+    }
+
     // ตรวจสอบสถานะตอนโหลดหน้าเว็บ
     window.addEventListener('DOMContentLoaded', () => {
       const isLogged = localStorage.getItem('bridge_user_logged') === 'true';
       const userName = localStorage.getItem('bridge_user_name');
       const authNavBtn = document.getElementById('authNavBtn');
+      const authContainer = document.getElementById('authNavContainer');
 
       if (isLogged) {
-        // ถ้าล็อกอินแล้ว: เอาคลาส guest ออก เพื่อปลดล็อกการแสดงผลทั้งหมด
         document.body.classList.remove('is-guest');
         
-        // ซ่อนป้ายเตือนสีแดงและปรับข้อความในการ์ดให้เป็นปกติ
         document.querySelectorAll('.locked-badge').forEach(badge => badge.style.display = 'none');
         document.querySelectorAll('.locked-feature').forEach(card => {
           card.style.opacity = '1';
@@ -305,19 +340,18 @@
         }
 
         if (authNavBtn) {
-          authNavBtn.textContent = `👤 ${userName || 'สมาชิก'}`;
+          authNavBtn.textContent = `👤 ${userName || 'สมาชิก'} ▾`;
           authNavBtn.href = '#';
           authNavBtn.onclick = (e) => {
             e.preventDefault();
-            if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
-              localStorage.removeItem('bridge_user_logged');
-              localStorage.removeItem('bridge_user_name');
-              window.location.reload();
-            }
+            e.stopPropagation();
+            authContainer.classList.toggle('active');
           };
+          window.addEventListener('click', () => {
+            authContainer.classList.remove('active');
+          });
         }
       } else {
-        // ถ้ายังไม่ได้ล็อกอิน เช็กการแสดงป๊อปอัพครั้งแรก
         const popupShown = sessionStorage.getItem('popup_shown');
         if (!popupShown) {
           openCompareModal();
