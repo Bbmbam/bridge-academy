@@ -18,7 +18,6 @@
     .navbar .nav-links a:hover { opacity: 1; background: rgba(255,255,255,0.1); }
     .navbar .nav-links a[aria-current="page"], .navbar .nav-links a.active { background: rgba(255,255,255,0.2) !important; padding: 6px 12px; font-weight: bold; opacity: 1; }
 
-    /* เมนูผู้ใช้: selector ต้องเจาะจงกว่า .navbar .nav-links a จึงจะเป็นสีดำได้ */
     .user-menu-container { position: relative; display: inline-block; }
     .user-dropdown-content { display: none; position: absolute; right: 0; top: 110%; background: #fff; min-width: 170px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; overflow: hidden; }
     .navbar .nav-links .user-dropdown-content a { color: #111 !important; background: #fff !important; opacity: 1 !important; display: block; padding: 12px 16px; border-radius: 0; font-size: 0.95rem; font-weight: 600; }
@@ -37,6 +36,9 @@
 
     .quiz-box { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     .quiz-header { display: flex; justify-content: space-between; align-items: center; background: #e9ecef; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-weight: bold; font-size: 0.9rem; flex-wrap: wrap; gap: 8px; }
+
+    .auction-status-bar { display: flex; gap: 12px; align-items: center; background: #113825; padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; color: #fff; font-size: 0.95rem; }
+    .auction-badge { background: #fff; color: #111; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
     .hand-display-box { background: var(--card-bg); border-radius: 12px; padding: 20px; color: #fff; margin-bottom: 20px; position: relative; min-height: 180px; }
     .classic-card-row { display: flex; align-items: center; margin: 12px 0; font-size: 1.1rem; }
@@ -108,7 +110,7 @@
 
   <div class="practice-container">
     <main>
-      <!-- 1. เมนู -->
+      <!-- 1. เมนูหลัก -->
       <div id="menuView" class="menu-card">
         <h2>🎯 เลือกแบบฝึกหัด Shape Before Strength</h2>
         <p style="color:#666;">เลือกหัวข้อที่ต้องการฝึก (ชุดละ 20 ข้อ):</p>
@@ -118,23 +120,28 @@
             <button class="menu-btn" onclick="toggleSubMenu('responseSub')">♥ ฝึก Response ▾</button>
             <div id="responseSub" class="sub-menu-container">
               <button class="menu-btn" style="width:100%; margin-top:6px; padding:10px;" onclick="startPractice('response_1c')">Response 1C</button>
-              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1D (เร็วๆนี้)</button>
-              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1H (เร็วๆนี้)</button>
-              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1S (เร็วๆนี้)</button>
-              <button class="menu-btn disabled" style="width:100%; margin-top:6px; padding:10px;">Response 1NT (เร็วๆนี้)</button>
+              <button class="menu-btn" style="width:100%; margin-top:6px; padding:10px;" onclick="startPractice('response_1d')">Response 1D</button>
+              <button class="menu-btn" style="width:100%; margin-top:6px; padding:10px;" onclick="startPractice('response_1h')">Response 1H</button>
+              <button class="menu-btn" style="width:100%; margin-top:6px; padding:10px;" onclick="startPractice('response_1s')">Response 1S</button>
+              <button class="menu-btn" style="width:100%; margin-top:6px; padding:10px;" onclick="startPractice('response_1nt')">Response 1NT</button>
             </div>
           </div>
-          <div><button class="menu-btn disabled">♦ Opener Rebid (ปิดใช้งาน)</button></div>
-          <div><button class="menu-btn disabled">♣ Responder Rebid (ปิดใช้งาน)</button></div>
+          <div>
+            <button class="menu-btn" onclick="toggleSubMenu('rebidSub')">♦ Opener Rebid ▾</button>
+            <div id="rebidSub" class="sub-menu-container">
+              <button class="menu-btn" style="width:100%; margin-top:6px; padding:10px;" onclick="startPractice('opener_rebid_1c')">Opener 1C Rebid</button>
+              <button class="menu-btn" style="width:100%; margin-top:6px; padding:10px;" onclick="startPractice('opener_rebid_1d')">Opener 1D Rebid</button>
+            </div>
+          </div>
+          <div><button class="menu-btn disabled">♣ Responder Rebid (เร็วๆนี้)</button></div>
         </div>
 
         <!-- สถิติตัวเอง + Top 5 -->
         <div id="memberDashboard" class="hidden" style="margin-top:35px; border-top:2px dashed #eee; padding-top:20px;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
             <h3 style="margin:0;">🏆 สถิติและลีดเดอร์บอร์ด</h3>
-            <div style="display:flex; gap:6px;">
-              <button class="btn mode-tab-btn" id="tab_opening" onclick="switchDashboardMode('opening')" style="padding:6px 14px; font-size:0.85rem;">Opening</button>
-              <button class="btn mode-tab-btn" id="tab_response_1c" onclick="switchDashboardMode('response_1c')" style="padding:6px 14px; font-size:0.85rem;">Response 1C</button>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;" id="dashboardTabsContainer">
+              <!-- ถูกเติมด้วย JS ตามโหมดที่มี -->
             </div>
           </div>
           <div id="myStatsBox"></div>
@@ -143,7 +150,7 @@
         </div>
       </div>
 
-      <!-- 2. ทำแบบฝึกหัด -->
+      <!-- 2. หน้าทำแบบฝึกหัด -->
       <div id="quizView" class="quiz-box hidden">
         <div class="quiz-header">
           <span id="quizTitle">หมวด: Opening</span>
@@ -153,12 +160,18 @@
           <button class="btn" style="background:#dc2f02; color:#fff; padding:6px 12px; font-size:0.9rem;" onclick="pausePractice()" type="button">⏸ พัก</button>
         </div>
 
+        <!-- แถบสถานการณ์โต๊ะบริดจ์ -->
+        <div class="auction-status-bar" id="auctionStatusBar">
+          <span>พาร์ทเนอร์เปิด: <span class="auction-badge" id="partnerBidBadge">1♥</span></span>
+          <span style="opacity:0.8; font-size:0.9rem;" id="auctionPromptText">คุณจะประมูลรอบสองว่าอย่างไร?</span>
+        </div>
+
         <div class="hand-display-box">
           <div class="hand-controls">
             <button class="action-badge-btn" onclick="toggleCardView()" id="viewToggleBtn" type="button">🔄 มุมมองแบดจ์</button>
             <button class="action-badge-btn" onclick="toggleSound()" id="soundToggleBtn" type="button">🔊 เปิดเสียง</button>
           </div>
-          <div style="font-size:0.95rem; margin-bottom:12px; opacity:0.9;">คุณเป็นผู้เปิดประมูลคนแรก (Dealer) จะประมูลอะไร?</div>
+          <div style="font-size:0.95rem; margin-bottom:12px; opacity:0.9;" id="mainInstruction">คุณเป็นผู้เปิดประมูลคนแรก (Dealer) จะประมูลอะไร?</div>
           <div id="cardRenderArea"></div>
           <div style="margin-top:15px; font-size:0.85rem; color:#d8f3dc;" id="handMeta"></div>
         </div>
@@ -190,7 +203,7 @@
         <div id="feedbackArea" class="hidden"></div>
       </div>
 
-      <!-- 3. สรุปผล -->
+      <!-- 3. หน้าสรุปผล -->
       <div id="summaryView" class="quiz-box hidden" style="text-align:center;">
         <h2>🎉 สรุปผลการฝึกซ้อม</h2>
         <div id="summaryStats" style="margin:20px 0; font-size:1.1rem; line-height:1.8;"></div>
@@ -223,16 +236,24 @@
   </div>
 
   <script>
-    // ===== ตั้งค่า Supabase =====
     const SUPABASE_URL = 'https://oedgolwpnxuhsuulohyy.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_bzBvrmkMZIvV5XRU1v_jDg__lRpzlXA'; // sb_publishable_... หรือ anon key (eyJ...)
+    const SUPABASE_KEY = '**_***********_******************_***__*******'; // ใส่คีย์จริงของคุณที่นี่
 
     const QUESTIONS_PER_SET = 20;
-    const MODE_LABELS = { opening: 'Opening', response_1c: 'Response 1C' };
+    const MODE_LABELS = {
+      opening: 'Opening',
+      response_1c: 'Response 1C',
+      response_1d: 'Response 1D',
+      response_1h: 'Response 1H',
+      response_1s: 'Response 1S',
+      response_1nt: 'Response 1NT',
+      opener_rebid_1c: 'Opener 1C Rebid',
+      opener_rebid_1d: 'Opener 1D Rebid'
+    };
 
     let _supabase = null;
     try {
-      if (window.supabase && !SUPABASE_KEY.startsWith('วาง_')) {
+      if (window.supabase && !SUPABASE_KEY.startsWith('วาง_') && !SUPABASE_KEY.includes('***')) {
         _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
     } catch (e) { console.error('Supabase init error:', e); }
@@ -248,7 +269,6 @@
     const currentUser = () => (localStorage.getItem('bridge_user_name') || '').trim();
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-    // ===== เสียง =====
     function playSound(type) {
       if (!soundEnabled) return;
       try {
@@ -277,13 +297,40 @@
       sub.style.display = sub.style.display === 'block' ? 'none' : 'block';
     }
 
-    // ===== สร้างโจทย์ (สุ่มจากสำรับ 52 ใบใน dss-engine.js) =====
+    // ===== สร้างโจทย์ตามหมวดหมู่ =====
     function generateQuestions(mode) {
       const list = [];
       for (let i = 1; i <= QUESTIONS_PER_SET; i++) {
         const hand = DSSEngine.generateRandomHand();
-        const [correct, reason] = openingBid(hand.hcp, hand.shape);
-        list.push({ id: i, ...hand, correct, reason });
+        let res = ["PASS", "no good bid"];
+        let partnerBid = "";
+
+        if (mode === 'opening') {
+          res = openingBid(hand.hcp, hand.shape);
+        } else if (mode === 'response_1c') {
+          partnerBid = "1♣";
+          res = response_1c(hand.hcp, hand.shape);
+        } else if (mode === 'response_1d') {
+          partnerBid = "1♦";
+          res = response_1d(hand.hcp, hand.shape);
+        } else if (mode === 'response_1h') {
+          partnerBid = "1♥";
+          res = response_1major("1H", hand.hcp, hand.shape);
+        } else if (mode === 'response_1s') {
+          partnerBid = "1♠";
+          res = response_1major("1S", hand.hcp, hand.shape);
+        } else if (mode === 'response_1nt') {
+          partnerBid = "1NT";
+          res = response_1nt(hand.hcp, hand.shape);
+        } else if (mode === 'opener_rebid_1c') {
+          partnerBid = "1♣ - 1♥"; // สมมติเคสตัวอย่างพาร์ทเนอร์ตอบ 1H
+          res = opener_rebid_1c("1H", hand.hcp, hand.shape);
+        } else if (mode === 'opener_rebid_1d') {
+          partnerBid = "1♦ - 1NT"; // สมมติเคสตัวอย่างพาร์ทเนอร์ตอบ 1NT
+          res = opener_rebid_1d("1N", hand.hcp, hand.shape);
+        }
+
+        list.push({ id: i, ...hand, correct: res[0], reason: res[1], partnerBid });
       }
       return list;
     }
@@ -305,6 +352,20 @@
       document.getElementById('cheatToggleBtn').textContent = '📂 แสดง';
       document.getElementById('quizTitle').textContent = `หมวด: ${MODE_LABELS[mode] || mode}`;
       document.getElementById('quizTimer').textContent = '⏱ เวลา: 00:00';
+
+      // ปรับหน้าจอแสดงผลตามโหมด (Opening vs Response/Rebid)
+      const statusBar = document.getElementById('auctionStatusBar');
+      const mainInstr = document.getElementById('mainInstruction');
+      const q = questionsList[0];
+
+      if (mode === 'opening') {
+        statusBar.classList.add('hidden');
+        mainInstr.textContent = 'คุณเป็นผู้เปิดประมูลคนแรก (Dealer) จะประมูลอะไร?';
+      } else {
+        statusBar.classList.remove('hidden');
+        document.getElementById('partnerBidBadge').textContent = q.partnerBid;
+        mainInstr.textContent = 'พาร์ทเนอร์เปิดประมูลแล้ว คุณจะประมูลตอบอย่างไร?';
+      }
 
       showView('quizView');
       startTimer();
@@ -339,6 +400,9 @@
       document.getElementById('quizProgress').textContent = `ข้อที่: ${currentQuestionIndex + 1} / ${QUESTIONS_PER_SET}`;
       document.getElementById('quizScore').textContent = `ถูก: ${scoreCorrect}/${totalAnswered}`;
       document.getElementById('handMeta').textContent = `แต้ม: ${q.hcp} HCP | ทรงไพ่: ${q.shape}`;
+      if (currentMode !== 'opening') {
+        document.getElementById('partnerBidBadge').textContent = q.partnerBid;
+      }
       renderCards(q.cards);
     }
 
@@ -398,7 +462,6 @@
       document.getElementById('selectedAnswerDisplay').textContent = t ? `คำตอบของคุณ: ${t}` : 'ยังไม่ได้เลือกคำตอบ';
     }
 
-    // 1NT=1N, 2NT=2N ... 7NT=7N, ♣=C ♦=D ♥=H ♠=S
     function normalizeAnswer(str) {
       return String(str || '').trim().toUpperCase()
         .replace(/♣/g, 'C').replace(/♦/g, 'D').replace(/♥/g, 'H').replace(/♠/g, 'S')
@@ -455,7 +518,6 @@
       else showSummary();
     }
 
-    // ===== สรุปผลและบันทึกลง Supabase =====
     async function showSummary() {
       clearInterval(timerInterval);
       showView('summaryView');
@@ -482,14 +544,12 @@
       }]);
 
       if (error) {
-        console.error('Insert error:', error);
         status.innerHTML = `<span style="color:#d00;">❌ บันทึกไม่สำเร็จ: ${esc(error.message)}</span>`;
       } else {
         status.innerHTML = '<span style="color:#1b4332; font-weight:bold;">✅ บันทึกผลเรียบร้อย</span>';
       }
     }
 
-    // ===== Dashboard: สถิติตัวเอง + Top 5 (สรุปรายคน) =====
     function returnToMenu() {
       showView('menuView');
       if (isLoggedIn()) switchDashboardMode(activeDashboardMode);
@@ -499,7 +559,7 @@
       document.getElementById('authNavContainer').classList.remove('active');
       if (!isLoggedIn()) { window.location.href = '../login.html'; return; }
       if (!document.getElementById('quizView').classList.contains('hidden')) {
-        if (!confirm('กำลังทำแบบฝึกหัดอยู่ ออกไปดูสถิติหรือไม่? (ชุดนี้จะไม่ถูกบันทึก)')) return;
+        if (!confirm('กำลังทำแบบฝึกหัดอยู่ ออกไปดูสถิติหรือไม่?')) return;
         clearInterval(timerInterval); clearInterval(countdownInterval);
       }
       activeDashboardMode = currentMode || 'opening';
@@ -533,13 +593,11 @@
         .limit(10000);
 
       if (error) {
-        console.error('Load error:', error);
         lbBox.innerHTML = `<p style="color:#d00;">❌ โหลดข้อมูลไม่สำเร็จ: ${esc(error.message)}</p>`;
         myBox.innerHTML = '';
         return;
       }
 
-      // รวมผลรายคน: จำนวนครั้ง + อัตราตอบถูก
       const map = {};
       (data || []).forEach(r => {
         map[r.username] = map[r.username] || { username: r.username, games: 0, correct: 0 };
@@ -591,6 +649,20 @@
         authBtn.href = '#';
         authBtn.onclick = e => { e.preventDefault(); e.stopPropagation(); authContainer.classList.toggle('active'); };
         document.addEventListener('click', e => { if (!authContainer.contains(e.target)) authContainer.classList.remove('active'); });
+        
+        // สร้างแท็บหมวดหมู่ใน Dashboard อัตโนมัติ
+        const tabsContainer = document.getElementById('dashboardTabsContainer');
+        tabsContainer.innerHTML = '';
+        Object.keys(MODE_LABELS).forEach(m => {
+          const btn = document.createElement('button');
+          btn.className = 'btn mode-tab-btn';
+          btn.id = `tab_${m}`;
+          btn.textContent = MODE_LABELS[m];
+          btn.style.cssText = 'padding:6px 12px; font-size:0.8rem;';
+          btn.onclick = () => switchDashboardMode(m);
+          tabsContainer.appendChild(btn);
+        });
+
         document.getElementById('memberDashboard').classList.remove('hidden');
         switchDashboardMode('opening');
       }
